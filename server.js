@@ -5,7 +5,7 @@ const path = require('path');
 
 // Create the Express app
 const app = express();
-const PORT = 3157;
+const PORT = process.env.PORT || 3157;
 
 // Set up Handlebars as the view engine
 app.engine('hbs', exphbs.engine({ extname: '.hbs' }));
