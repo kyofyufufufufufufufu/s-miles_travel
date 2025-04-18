@@ -2,8 +2,28 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Quicksand', sans-serif;
-    background-color: #fdf6ec;
-    color: #333;
+    background-color: #fdf4d8;
+    color: #273441;
+  }
+
+  .content-window {
+    background-color: #fef9ea;
+    border-radius: 24px;
+    max-width: 1000px;
+    margin: 2rem auto;
+    overflow: hidden; /* ensures nav corners match */
+  }
+  
+  .window-nav {
+    background-color: #f9e19d; /* pastel yellow */
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .window-main {
+    padding: 2rem;
+    text-align: center;
   }
   
   h1, h2 {
@@ -13,19 +33,9 @@ body {
 
   nav {
     background-color: #ffcf56;
-    border-bottom: 3px solid #f8c1c1;
     position: sticky;
     top: 0;
     z-index: 999;
-  }
-  
-  .nav-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
   }
   
   .logo {
@@ -34,10 +44,16 @@ body {
     object-fit: contain;
   }
   
-  nav ul {
+  .nav-container {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    justify-content: space-between; /* KEY */
+    width: 100%;
+  }
+  
+  nav ul {
+    display: flex;
+    gap: 1.5rem;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -62,33 +78,6 @@ body {
     text-align: center;
   }
   
-  .trip-options {
-    margin-top: 2rem;
-    display: flex;
-    gap: 2rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  
-  .trip-button {
-    background-color: #ffcf56;
-    color: #333;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-  
-  .trip-button:hover {
-    background-color: #f8c1c1;
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-  }
-  
   .image-frame {
     border: 5px dashed #a5d8ff;
     padding: 1rem;
@@ -98,19 +87,97 @@ body {
     margin: 2rem auto;
   }
   
-  .hero-banner {
-    background-image: url('/images/hero-banner-optimized.jpg');
-    background-size: cover;
-    background-position: center;
-    height: 300px;
+  .hero-split {
     display: flex;
     align-items: center;
-    justify-content: center;
-    text-align: center;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
   }
   
-  .hero-text h1 {
-    color: white;
-    font-size: 1.8rem;
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+  .tagline-split {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; /* center the whole duo */
+    gap: 0.1rem; /* Optional: restore a *small* friendly gap */
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  
+  .tagline-text {
+    max-width: 400px;
+    text-align: left;
+  }
+  
+  .tagline-text h2 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 3rem;
+    color: #333;
+    margin: 0;
+  }
+  
+  .tagline-image {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    justify-content: center;
+  }
+  .image-frame {
+    border: 3px dashed #e479a2;
+    padding: 1rem;
+    border-radius: 16px;
+    background-color: white;
+    max-width: 300px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+  }
+
+  .image-frame img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+  }
+
+  .trip-type-section {
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+  
+  .trip-heading h2,
+  .trip-subtext h2 {
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+  
+  .trip-cards {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .trip-card {
+    background-color: white;
+    border: 2px dashed #e479a2;
+    padding: 1.5rem;
+    width: 160px;
+    border-radius: 16px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .trip-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+  }
+  
+  .trip-card .icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
   }

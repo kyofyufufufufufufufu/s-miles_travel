@@ -7,21 +7,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <nav>
-  <div class="nav-container">
-    <a href="/">
-      <img src="/images/smiles-logo.png" alt="s+miles logo" class="logo" />
-    </a>
-    <ul>
-      <li><a href="/">Home</a></li>
-      <li><a href="/account">Account</a></li>
-      <li><a href="/saved">Saved Trips</a></li>
-    </ul>
-  </div>
-</nav>
+  <div class="content-window">
+    
+    <!-- NAVIGATION lives here at the very top of the window -->
+    <nav class="window-nav">
+      <div class="nav-container">
+        <a href="/">
+          <img src="/images/smiles-logo.png" alt="s+miles logo" class="logo" />
+        </a>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/account">Account</a></li>
+          <li><a href="/saved">Saved Trips</a></li>
+          <li><a href="/about">About Us</a></li>
+        </ul>
+      </div>
+    </nav>
 
-  <main>
-    {{{body}}} <!-- This is where individual page content shows up -->
-  </main>
+    <!-- THEN we wrap the rest of the page content -->
+    <main class="window-main">
+      {{{body}}}
+    </main>
+  </div>
 </body>
 </html>
