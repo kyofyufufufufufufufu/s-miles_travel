@@ -1,0 +1,109 @@
+<form action="{{formAction}}" method="POST" class="custom-form">
+
+  <!-- Basic Trip Info -->
+  <label>Trip Name:</label>
+  <input type="text" name="tripName" required>
+
+  <label>Destination:</label>
+  <input type="text" name="destination" required>
+
+  <label>Start Date:</label>
+  <input type="date" name="startDate" required>
+
+  <label>End Date:</label>
+  <input type="date" name="endDate" required>
+
+  <label>Number of Travelers:</label>
+  <input type="number" name="travelers" min="1" required>
+
+  <!-- Transportation -->
+  <fieldset>
+    <legend>Traveling By:</legend>
+    <label><input type="checkbox" name="transport" value="plane"> Plane</label>
+    <label><input type="checkbox" name="transport" value="train"> Train</label>
+    <label><input type="checkbox" name="transport" value="car"> Car</label>
+    <label><input type="checkbox" name="transport" value="other"> Other</label>
+  </fieldset>
+
+  <label>Estimated Cost (for transport):</label>
+  <input type="number" name="transportBudget" />
+    {{#if (eq tripTypeFlag "road")}}
+    <label>Gas & Tolls ($):</label>
+    <input type="number" name="roadBudget" />
+    {{/if}}
+
+    {{#if (eq tripTypeFlag "air")}}
+        <label>Flight Cost ($):</label>
+        <input type="number" name="flightBudget" />
+    {{/if}}
+
+  <!-- Lodging -->
+  <fieldset>
+    <legend>Lodging:</legend>
+    <label><input type="checkbox" name="lodging" value="hotel"> Hotel</label>
+    <label><input type="checkbox" name="lodging" value="airbnb"> Airbnb</label>
+    <label><input type="checkbox" name="lodging" value="camping"> Camping</label>
+    <label><input type="checkbox" name="lodging" value="withFriends"> With Friends</label>
+  </fieldset>
+
+  <label>Estimated Cost (for lodging):</label>
+  <input type="number" name="lodgingBudget" />
+{{#if (eq tripTypeFlag "nature")}}
+    <label>Park Entry Fees ($):</label>
+    <input type="number" name="natureBudget" />
+{{/if}}
+
+  <!-- Trip Type & Destination -->
+  <label>Trip Type:</label>
+  <select name="tripType">
+    <option value="recreation">Recreation</option>
+    <option value="business">Business</option>
+    <option value="family">Family</option>
+    <option value="other">Other</option>
+  </select>
+
+  <label>Destination Type:</label>
+  <select name="destinationType">
+    <option value="international">International</option>
+    <option value="domestic">Domestic</option>
+  </select>
+
+  <!-- Savings (Conditional) -->
+  <label>Are you saving for this trip?</label>
+  <select name="saving" id="saving">
+    <option value="no">No</option>
+    <option value="yes">Yes</option>
+  </select>
+
+  <div id="saving-section" style="display: none;">
+    <label>Budget Goal ($):</label>
+    <input type="number" name="savingsGoal">
+  </div>
+
+  <!-- Packing List (Conditional) -->
+  <label>Do you need to pack?</label>
+  <select id="show-packing" name="wantsPacking">
+    <option value="no">No</option>
+    <option value="yes">Yes</option>
+  </select>
+
+  <div id="packing-section" style="display: none;">
+    <label>Packing List:</label>
+    <textarea name="packingList" rows="5" placeholder="e.g. passport, charger, snacks"></textarea>
+  </div>
+
+  <!-- To-Do List (Conditional) -->
+  <label>Do you want to add a to-do list?</label>
+  <select id="show-todo" name="wantsTodo">
+    <option value="no">No</option>
+    <option value="yes">Yes</option>
+  </select>
+
+  <div id="todo-section" style="display: none;">
+    <label>To-Do List:</label>
+    <textarea name="todoList" rows="5" placeholder="e.g. book hotel, renew passport, confirm rental car"></textarea>
+  </div>
+
+  <!-- Submit -->
+  <button type="submit" class="trip-button">Save Trip</button>
+</form>

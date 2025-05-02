@@ -1,0 +1,40 @@
+<h2>Your Saved Trips</h2>
+
+{{#if trips.length}}
+  <div class="trip-list">
+    {{#each trips}}
+      <div class="trip-card">
+        <div class="trip-header">
+          <h3>
+            {{getTripIcon trip_type}} {{trip_name}}
+          </h3>
+          <span class="trip-dates">
+            {{formatDate start_date}} - {{formatDate end_date}}
+          </span>
+        </div>
+
+        <p class="trip-destination">{{destination}}</p>
+
+        <p><strong>Travelers:</strong> {{travelers}}</p>
+
+        <div class="trip-details">
+          <div class="trip-detail-row">
+            <p><strong>Transport:</strong> {{transport}}</p>
+            <p><strong>Transport Budget:</strong> ${{transport_budget}}</p>
+          </div>
+          <div class="trip-detail-row">
+            <p><strong>Lodging:</strong> {{lodging}}</p>
+            <p><strong>Lodging Budget:</strong> ${{lodging_budget}}</p>
+          </div>
+        </div>
+
+
+
+
+        <p class="trip-total"><strong>Total Estimated Budget:</strong> ${{add transport_budget lodging_budget}}</p>
+      </div>
+    {{/each}}
+  </div>
+{{else}}
+  <p>You have no saved trips yet. Start one from the homepage!</p>
+{{/if}}
