@@ -385,3 +385,8 @@ body {
   -moz-columns: 2;
   column-gap: 2rem;
 }
+
+.packing-item.checked label {
+  text-decoration: line-through;
+  color: #888 !important;
+}

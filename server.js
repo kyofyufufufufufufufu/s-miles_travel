@@ -63,6 +63,9 @@ hbs.handlebars.registerHelper('getTripIcon', (type) => {
     default: return '🛠️';
   }
 });
+hbs.handlebars.registerHelper('json', (context) => {
+  return JSON.stringify(context).replace(/</g, '\\u003c');
+});
 
 // Step 4: Apply hbs engine to express
 app.engine('hbs', hbs.engine);
@@ -280,6 +283,7 @@ app.get('/trip/:tripName', async (req, res) => {
     // ✅ Fetch packing list
     const packing = await axios.get(`http://localhost:3777/packing/${encodeURIComponent(tripName)}`);
     trip.packingList = packing.data;
+    console.log(trip.packingList)
 
     res.render('tripDetail', { title: trip.trip_name, trip });
   } catch (err) {

@@ -66,8 +66,8 @@
     <h4>Packing List</h4>
     <ul class="packing-checklist">
       {{#each trip.packingList}}
-        <li>
-          <input type="checkbox" id="item-{{@index}}" {{#if checked}}checked{{/if}} />
+        <li class="packing-item {{#if checked}}checked{{/if}}">
+          <input type="checkbox" id="item-{{@index}}" data-index="{{@index}}" {{#if checked}}checked{{/if}} />
           <label for="item-{{@index}}">{{item}}</label>
         </li>
       {{/each}}
@@ -83,6 +83,7 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    // 🎉 Confetti if applicable
     const canvas = document.getElementById('confetti-canvas');
     if (canvas) {
       const confetti = window.confetti.create(canvas, {
@@ -95,5 +96,28 @@
         origin: { y: 0.6 }
       });
     }
+
+    // ✅ Packing list checkbox toggle logic
+    const tripId = "{{trip.trip_name}}"; // injected into JS as string
+
+    document.querySelectorAll('.packing-checklist input[type="checkbox"]').forEach((checkbox) => {
+      checkbox.addEventListener('change', async (e) => {
+        const index = e.target.dataset.index;
+
+        try {
+          const response = await fetch(`http://localhost:3777/packing/${encodeURIComponent(tripId)}/${index}`, {
+            method: 'PATCH'
+          });
+
+          const result = await response.json();
+          console.log('PATCH response:', result);
+
+          const li = e.target.closest('li');
+          if (li) li.classList.toggle('checked');
+        } catch (err) {
+          console.error('Error updating packing item:', err);
+        }
+      });
+    });
   });
 </script>

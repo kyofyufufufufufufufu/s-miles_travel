@@ -30,58 +30,9 @@
           </div>
         </div>
         <p class="trip-total"><strong>Total Estimated Budget:</strong> ${{add transport_budget lodging_budget}}</p>
-        <div class="savings-section">
-          <p>
-            <strong>Savings Goal:</strong> ${{savings_goal}} |
-            <strong>Saved:</strong> ${{savings_saved}} |
-            <strong>Progress:</strong> {{savings_percent}}%
-          </p>
-
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: {{savings_percent}}%;"></div>
-          </div>
-          
-          <form method="POST" action="/savings/add" class="savings-form">
-            <input type="hidden" name="trip_id" value="{{trip_name}}" />
-            <input type="hidden" name="index" value="{{@index}}" /> <!-- ADD THIS -->
-            <label for="amount-{{@index}}">Add to Savings:</label>
-            <input type="number" name="amount" id="amount-{{@index}}" step="0.01" min="0.01" required />
-            <button class="cute-button" type="submit">💾 Save</button>
-          </form>
-          {{#if (gte savings_saved savings_goal)}}
-            <div class="goal-message" id="goal-message-{{@index}}">
-              {{#if (eq savings_saved savings_goal)}}
-                🎉 You've reached your goal!
-              {{else}}
-                🎉 You've reached your goal (and a little more too)! 😉
-              {{/if}}
-              <canvas id="confetti-{{@index}}" class="confetti-canvas"></canvas>
-            </div>
-          {{/if}}
-        </div>
       </div>
     {{/each}}
   </div>
 {{else}}
   <p>You have no saved trips yet. Start one from the homepage!</p>
 {{/if}}
-
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.goal-message').forEach((el, index) => {
-      const canvas = document.getElementById(`confetti-${index}`);
-      if (canvas) {
-        const confetti = window.confetti.create(canvas, {
-          resize: true,
-          useWorker: true
-        });
-        confetti({
-          particleCount: 80,
-          spread: 60,
-          origin: { y: 0.6 }
-        });
-      }
-    });
-  });
-</script>
