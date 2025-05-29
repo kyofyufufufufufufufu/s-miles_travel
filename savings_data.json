@@ -1,18 +1,18 @@
 {
   "Christmas Vacation": {
-    "goal": 2200.0,
+    "goal": 4000.0,
     "saved": 2600.0
   },
   "Test Trip": {
-    "goal": 1800.0,
+    "goal": 3000.0,
     "saved": 1800.0
   },
   "Family Reunion": {
-    "goal": 1555.0,
+    "goal": 0.0,
     "saved": 1555.0
   },
   "Sunstone Mining Trip": {
-    "goal": 40.0,
-    "saved": 40.0
+    "goal": 150.0,
+    "saved": 270.0
   }
 }

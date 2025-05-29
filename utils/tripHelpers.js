@@ -95,9 +95,7 @@ function renderConfirmation(res, tripName, budget) {
 
 async function syncSavingsDataForTrip(trip) {
   const tripId = encodeURIComponent(trip.trip_name);
-  const goal =
-    (parseFloat(trip.transport_budget) || 0) +
-    (parseFloat(trip.lodging_budget) || 0);
+  const goal = parseFloat(trip.savings_goal) || 0;
 
   try {
     const response = await axios.get(`http://localhost:3760/savings/${tripId}`);

@@ -38,15 +38,16 @@
     </p>
 
     <div class="progress-bar">
-      <div class="progress-fill" style="width: {{trip.savings_percent}}%;"></div>
+      <div class="progress-fill" style="width: {{min trip.savings_percent 100}}%;"></div>
     </div>
 
     <form method="POST" action="/savings/add" class="savings-form">
-      <input type="hidden" name="trip_id" value="{{trip.trip_name}}" />
-      <label for="amount">Add to Savings:</label>
-      <input type="number" name="amount" id="amount" step="0.01" min="0.01" required />
-      <button class="cute-button" type="submit">💾 Save</button>
+        <input type="hidden" name="trip_id" value="{{trip.trip_name}}" />
+        <label for="amount">Add to Savings:</label>
+        <input type="number" name="amount" id="amount" step="0.01" min="0.01" required />
+        <button class="cute-button" type="submit">💾 Save</button>
     </form>
+
 
     {{#if (gte trip.savings_saved trip.savings_goal)}}
       <div class="goal-message">

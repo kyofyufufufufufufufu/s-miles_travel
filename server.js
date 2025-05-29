@@ -33,43 +33,38 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3157;
 
-// Set up Handlebars as the view engine
+// Step 1: Create hbs instance (before registering helpers)
+const hbs = exphbs.create({ extname: '.hbs' });
 
-const hbs = exphbs.create({
-  extname: '.hbs',
-  helpers: {
-    gte: (a, b) => parseFloat(a) >= parseFloat(b),
-    eq: (a, b) => a === b,
-    formatDate: (date) => {
-      if (!date) return '';
-      const d = new Date(date);
-      return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-    },
-    add: (a, b) => {
-      const numA = parseInt(a) || 0;
-      const numB = parseInt(b) || 0;
-      return numA + numB;
-    },
-    getTripIcon: (type) => {
-      switch (type) {
-        case 'air':
-          return '✈️';
-        case 'road':
-          return '🚗';
-        case 'nature':
-          return '🌲';
-        case 'custom':
-        default:
-          return '🛠️';
-      }
-    }
-    
-  }
-});
-
+// Step 2: Register handlebars-helpers first
 const helpers = require('handlebars-helpers')();
 hbs.handlebars.registerHelper(helpers);
 
+// Step 3: Register your custom helpers
+hbs.handlebars.registerHelper('gte', (a, b) => parseFloat(a) >= parseFloat(b));
+hbs.handlebars.registerHelper('eq', (a, b) => a === b);
+hbs.handlebars.registerHelper('min', (a, b) => Math.min(parseFloat(a), parseFloat(b)));
+hbs.handlebars.registerHelper('formatDate', (date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+});
+hbs.handlebars.registerHelper('add', (a, b) => {
+  const numA = parseInt(a) || 0;
+  const numB = parseInt(b) || 0;
+  return numA + numB;
+});
+hbs.handlebars.registerHelper('getTripIcon', (type) => {
+  switch (type) {
+    case 'air': return '✈️';
+    case 'road': return '🚗';
+    case 'nature': return '🌲';
+    case 'custom':
+    default: return '🛠️';
+  }
+});
+
+// Step 4: Apply hbs engine to express
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -77,12 +72,11 @@ app.set('views', path.join(__dirname, 'views'));
 // Serve static files (like CSS) from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(session({
-  secret: 'smiles-secret-key', // 👉 use dotenv later
+  secret: 'smiles-secret-key', // use dotenv later
   resave: false,
   saveUninitialized: false
 }));
@@ -260,17 +254,16 @@ app.post('/custom', async (req, res) => {
 
 app.post('/savings/add', async (req, res) => {
   const { trip_id, amount } = req.body;
-  const index = req.body.index; // 👈 comes from form now
 
   try {
-    const response = await axios.patch(`http://localhost:3760/savings/${encodeURIComponent(trip_id)}`, {
+    await axios.patch(`http://localhost:3760/savings/${encodeURIComponent(trip_id)}`, {
       amount: parseFloat(amount)
     });
     console.log(`Added $${amount} to savings for ${trip_id}`);
-    res.redirect(`/saved#trip-${index}`);
+    res.redirect(`/trip/${encodeURIComponent(trip_id)}`); // ✅ redirect to trip detail view
   } catch (err) {
     console.error('Savings update failed:', err.message);
-    res.redirect(`/saved#trip-${index}`); // still jump to the trip
+    res.redirect(`/trip/${encodeURIComponent(trip_id)}`); // ✅ redirect even on error
   }
 });
 
@@ -281,6 +274,10 @@ app.get('/trip/:tripName', async (req, res) => {
     const trip = result.rows[0];
     if (!trip) return res.status(404).send('Trip not found');
 
+    // ✅ Fetch and update savings data
+    await syncSavingsDataForTrip(trip);
+
+    // ✅ Fetch packing list
     const packing = await axios.get(`http://localhost:3777/packing/${encodeURIComponent(tripName)}`);
     trip.packingList = packing.data;
 
