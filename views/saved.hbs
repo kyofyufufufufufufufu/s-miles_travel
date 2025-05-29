@@ -27,11 +27,25 @@
             <p><strong>Lodging Budget:</strong> ${{lodging_budget}}</p>
           </div>
         </div>
-
-
-
-
         <p class="trip-total"><strong>Total Estimated Budget:</strong> ${{add transport_budget lodging_budget}}</p>
+        <div class="savings-section">
+          <p>
+            <strong>Savings Goal:</strong> ${{savings_goal}} |
+            <strong>Saved:</strong> ${{savings_saved}} |
+            <strong>Progress:</strong> {{savings_percent}}%
+          </p>
+
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{savings_percent}}%;"></div>
+          </div>
+          
+          <form method="POST" action="/savings/add" class="savings-form">
+            <input type="hidden" name="trip_id" value="{{trip_name}}" />
+            <label for="amount-{{@index}}">Add to Savings:</label>
+            <input type="number" name="amount" id="amount-{{@index}}" step="0.01" required />
+            <button class="cute-button" type="submit">💾 Save</button>
+          </form>
+        </div>
       </div>
     {{/each}}
   </div>

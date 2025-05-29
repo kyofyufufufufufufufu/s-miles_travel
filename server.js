@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt');
 
 const { Pool } = require('pg');
 
+const axios = require('axios');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -112,15 +114,54 @@ app.get('/saved', async (req, res) => {
       ORDER BY created_at DESC
     `);
 
+    const trips = result.rows;
+
+    for (let trip of trips) {
+      const tripId = encodeURIComponent(trip.trip_name);
+      const goal = (parseFloat(trip.transport_budget) || 0) + (parseFloat(trip.lodging_budget) || 0);
+
+      try {
+        const response = await axios.get(`http://localhost:3760/savings/${tripId}`);
+        
+        // Sync goal just in case it changed
+        await axios.patch(`http://localhost:3760/savings/${tripId}`, {
+          goal: goal
+        });
+
+        trip.savings_goal = goal;
+        trip.savings_saved = response.data.saved;
+        trip.savings_percent = response.data.percent;
+      } catch (err) {
+        console.warn(`No savings found for ${trip.trip_name}. Creating with goal $${goal}...`);
+
+        try {
+          await axios.post(`http://localhost:3760/savings`, {
+            trip_id: trip.trip_name,
+            goal: goal
+          });
+
+          trip.savings_goal = goal;
+          trip.savings_saved = 0;
+          trip.savings_percent = 0;
+        } catch (postErr) {
+          console.error(`Failed to create savings goal: ${postErr.message}`);
+          trip.savings_goal = goal;
+          trip.savings_saved = 0;
+          trip.savings_percent = 0;
+        }
+      }
+    }
+
     res.render('saved', {
       title: 'My Saved Trips',
-      trips: result.rows
+      trips: trips
     });
   } catch (err) {
-    console.error('Error fetching trips from DB:', err);
+    console.error('ERROR in /saved route:', err.stack);
     res.status(500).send('Could not load trips from database.');
   }
 });
+
 
 // About
 app.get('/about', (req, res) => {
@@ -287,6 +328,22 @@ app.post('/custom', async (req, res) => {
     res.status(500).send('Failed to save trip to the database.');
   }
 });
+
+app.post('/savings/add', async (req, res) => {
+  const { trip_id, amount } = req.body;
+
+  try {
+    await axios.patch(`http://localhost:3760/savings/${encodeURIComponent(trip_id)}`, {
+      amount: parseFloat(amount)
+    });
+    console.log(`Added $${amount} to savings for ${trip_id}`);
+  } catch (err) {
+    console.error('Savings update failed:', err.message);
+  }
+
+  res.redirect('/saved');
+});
+
 
 // Handle Registration
 app.post('/register', async (req, res) => {
