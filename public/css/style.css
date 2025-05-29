@@ -360,3 +360,28 @@ body {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.trip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trip-header h3 {
+  margin: 0;
+}
+
+.view-trip-link {
+  text-decoration: none;
+  color: #333;
+  font-weight: 600;
+}
+
+.packing-checklist {
+  list-style-type: none;
+  padding-left: 0;
+  columns: 2;
+  -webkit-columns: 2;
+  -moz-columns: 2;
+  column-gap: 2rem;
+}

@@ -1,1 +1,52 @@
-{}
+{
+  "Sunstone Mining Trip": [
+    {
+      "item": "Car charger \ud83d\ude97\ud83d\udd0c",
+      "checked": false
+    },
+    {
+      "item": "Cooler \ud83e\uddca",
+      "checked": false
+    },
+    {
+      "item": "Credit/Debit cards \ud83d\udcb3",
+      "checked": false
+    },
+    {
+      "item": "Deodorant \ud83e\uddf4",
+      "checked": false
+    },
+    {
+      "item": "Entertainment (audiobooks, music, etc.) \ud83c\udfb5",
+      "checked": false
+    },
+    {
+      "item": "Flashlight \ud83d\udd26",
+      "checked": false
+    },
+    {
+      "item": "ID (Driver's License, REAL ID, etc.) \ud83e\udeaa",
+      "checked": false
+    },
+    {
+      "item": "Phone charger \ud83d\udd0c",
+      "checked": false
+    },
+    {
+      "item": "Phone \ud83d\udcf1",
+      "checked": false
+    },
+    {
+      "item": "Reusable water bottle \ud83c\udf7c",
+      "checked": false
+    },
+    {
+      "item": "Snacks \ud83c\udf6b",
+      "checked": false
+    },
+    {
+      "item": "Wallet \ud83d\udc5b",
+      "checked": false
+    }
+  ]
+}

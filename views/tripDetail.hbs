@@ -1,0 +1,97 @@
+<section class="trip-card">
+  <div class="trip-header">
+    <h3>{{trip.trip_name}} {{getTripIcon trip.trip_type}}</h3>
+    <div class="trip-actions">
+      <a href="/edit/{{trip.trip_name}}" class="view-trip-link">✏️ Edit</a>
+      <form action="/delete/{{trip.trip_name}}" method="POST" onsubmit="return confirm('Delete this trip?')">
+        <button type="submit" class="view-trip-link" style="background: none; border: none; padding: 0;">🗑️ Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <span class="trip-dates">
+    {{formatDate trip.start_date}} - {{formatDate trip.end_date}}
+  </span>
+
+  <p class="trip-destination">{{trip.destination}}</p>
+
+  <p><strong>Travelers:</strong> {{trip.travelers}}</p>
+
+  <div class="trip-details">
+    <div class="trip-detail-row">
+      <p><strong>Transport:</strong> {{trip.transport}}</p>
+      <p><strong>Transport Budget:</strong> ${{trip.transport_budget}}</p>
+    </div>
+    <div class="trip-detail-row">
+      <p><strong>Lodging:</strong> {{trip.lodging}}</p>
+      <p><strong>Lodging Budget:</strong> ${{trip.lodging_budget}}</p>
+    </div>
+  </div>
+
+  <p class="trip-total"><strong>Total Estimated Budget:</strong> ${{add trip.transport_budget trip.lodging_budget}}</p>
+
+  <div class="savings-section">
+    <p>
+      <strong>Savings Goal:</strong> ${{trip.savings_goal}} |
+      <strong>Saved:</strong> ${{trip.savings_saved}} |
+      <strong>Progress:</strong> {{trip.savings_percent}}%
+    </p>
+
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: {{trip.savings_percent}}%;"></div>
+    </div>
+
+    <form method="POST" action="/savings/add" class="savings-form">
+      <input type="hidden" name="trip_id" value="{{trip.trip_name}}" />
+      <label for="amount">Add to Savings:</label>
+      <input type="number" name="amount" id="amount" step="0.01" min="0.01" required />
+      <button class="cute-button" type="submit">💾 Save</button>
+    </form>
+
+    {{#if (gte trip.savings_saved trip.savings_goal)}}
+      <div class="goal-message">
+        {{#if (eq trip.savings_saved trip.savings_goal)}}
+          🎉 You've reached your goal!
+        {{else}}
+          🎉 You've reached your goal (and a little more too)! 😉
+        {{/if}}
+        <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+      </div>
+    {{/if}}
+  </div>
+
+  {{#if trip.wants_packing}}
+    <h4>Packing List</h4>
+    <ul class="packing-checklist">
+      {{#each trip.packingList}}
+        <li>
+          <input type="checkbox" id="item-{{@index}}" {{#if checked}}checked{{/if}} />
+          <label for="item-{{@index}}">{{item}}</label>
+        </li>
+      {{/each}}
+    </ul>
+  {{/if}}
+
+  {{#if trip.wants_todo}}
+    <h4>To-Do List</h4>
+    <p>{{trip.todo_list}}</p>
+  {{/if}}
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('confetti-canvas');
+    if (canvas) {
+      const confetti = window.confetti.create(canvas, {
+        resize: true,
+        useWorker: true
+      });
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.6 }
+      });
+    }
+  });
+</script>

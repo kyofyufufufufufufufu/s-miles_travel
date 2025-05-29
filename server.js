@@ -186,23 +186,6 @@ app.get('/custom', (req, res) => {
   });
 });
 
-// Show Register Form
-app.get('/register', (req, res) => {
-  res.render('register', { title: 'Create Account' });
-});
-
-// Show Login Form
-app.get('/login', (req, res) => {
-  res.render('login', { title: 'Login' });
-});
-
-// Handle Logout
-app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/');
-  });
-});
-
 //Air POST
 // Air Travel POST
 app.post('/air', async (req, res) => {
@@ -291,38 +274,22 @@ app.post('/savings/add', async (req, res) => {
   }
 });
 
-// Handle Registration
-app.post('/register', async (req, res) => {
-  const { username, password } = req.body;
+app.get('/trip/:tripName', async (req, res) => {
+  const { tripName } = req.params;
   try {
-    const hashed = await bcrypt.hash(password, 10);
-    await pool.query('INSERT INTO users (username, password_hash) VALUES ($1, $2)', [username, hashed]);
-    res.redirect('/login');
+    const result = await pool.query('SELECT * FROM trips WHERE trip_name = $1', [tripName]);
+    const trip = result.rows[0];
+    if (!trip) return res.status(404).send('Trip not found');
+
+    const packing = await axios.get(`http://localhost:3777/packing/${encodeURIComponent(tripName)}`);
+    trip.packingList = packing.data;
+
+    res.render('tripDetail', { title: trip.trip_name, trip });
   } catch (err) {
-    console.error('Registration Error:', err);
-    res.send('Registration failed. Try a different username.');
+    console.error(err);
+    res.status(500).send('Error loading trip');
   }
 });
-
-
-
-// Handle Login
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-
-  if (result.rows.length === 0) {
-    return res.send('No user found');
-  }
-
-  const user = result.rows[0];
-  const match = await bcrypt.compare(password, user.password_hash);
-  if (!match) return res.send('Incorrect password');
-
-  req.session.userId = user.id;
-  res.redirect('/');
-});
-
 
 // Start the server
 app.listen(PORT, () => {

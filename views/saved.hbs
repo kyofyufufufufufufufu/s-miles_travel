@@ -7,12 +7,13 @@
       <div class="trip-card">
         <div class="trip-header">
           <h3>
-            {{getTripIcon trip_type}} {{trip_name}}
+            {{trip_name}} {{getTripIcon trip_type}}
           </h3>
-          <span class="trip-dates">
-            {{formatDate start_date}} - {{formatDate end_date}}
-          </span>
+          <a href="/trip/{{trip_name}}" class="view-trip-link">View Trip</a>
         </div>
+        <span class="trip-dates">
+          {{formatDate start_date}} - {{formatDate end_date}}
+        </span>
 
         <p class="trip-destination">{{destination}}</p>
 
