@@ -30,6 +30,7 @@ const PORT = process.env.PORT || 3157;
 const hbs = exphbs.create({
   extname: '.hbs',
   helpers: {
+    gte: (a, b) => parseFloat(a) >= parseFloat(b),
     eq: (a, b) => a === b,
     formatDate: (date) => {
       if (!date) return '';
@@ -58,6 +59,8 @@ const hbs = exphbs.create({
   }
 });
 
+const helpers = require('handlebars-helpers')();
+hbs.handlebars.registerHelper(helpers);
 
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
@@ -331,19 +334,19 @@ app.post('/custom', async (req, res) => {
 
 app.post('/savings/add', async (req, res) => {
   const { trip_id, amount } = req.body;
+  const index = req.body.index; // 👈 comes from form now
 
   try {
-    await axios.patch(`http://localhost:3760/savings/${encodeURIComponent(trip_id)}`, {
+    const response = await axios.patch(`http://localhost:3760/savings/${encodeURIComponent(trip_id)}`, {
       amount: parseFloat(amount)
     });
     console.log(`Added $${amount} to savings for ${trip_id}`);
+    res.redirect(`/saved#trip-${index}`);
   } catch (err) {
     console.error('Savings update failed:', err.message);
+    res.redirect(`/saved#trip-${index}`); // still jump to the trip
   }
-
-  res.redirect('/saved');
 });
-
 
 // Handle Registration
 app.post('/register', async (req, res) => {

@@ -74,7 +74,27 @@ def update_savings(trip_id):
 
     # Update saved amount
     if 'amount' in body:
-        data[trip_id]['saved'] += float(body['amount'])
+        amount = float(body['amount'])
+
+        # Prevent negative or zero contributions
+        if amount <= 0:
+            return jsonify({
+                "error": "Amount must be greater than 0."
+            }), 400
+
+        new_total = data[trip_id]['saved'] + amount
+        goal = data[trip_id]['goal']
+
+        if new_total > goal:
+            return jsonify({
+                "error": "Cannot add more than the savings goal.",
+                "goal": goal,
+                "attempted_total": new_total
+            }), 400
+
+        data[trip_id]['saved'] = new_total
+
+
 
     # Update goal (optional)
     if 'goal' in body:
