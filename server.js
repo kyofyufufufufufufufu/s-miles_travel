@@ -9,6 +9,14 @@ const { Pool } = require('pg');
 
 const axios = require('axios');
 
+const {
+  insertTripToDB,
+  syncPackingItems,
+  normalizeBudget,
+  renderConfirmation,
+  syncSavingsDataForTrip
+} = require('./utils/tripHelpers');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -69,6 +77,7 @@ app.set('views', path.join(__dirname, 'views'));
 // Serve static files (like CSS) from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -120,39 +129,7 @@ app.get('/saved', async (req, res) => {
     const trips = result.rows;
 
     for (let trip of trips) {
-      const tripId = encodeURIComponent(trip.trip_name);
-      const goal = (parseFloat(trip.transport_budget) || 0) + (parseFloat(trip.lodging_budget) || 0);
-
-      try {
-        const response = await axios.get(`http://localhost:3760/savings/${tripId}`);
-        
-        // Sync goal just in case it changed
-        await axios.patch(`http://localhost:3760/savings/${tripId}`, {
-          goal: goal
-        });
-
-        trip.savings_goal = goal;
-        trip.savings_saved = response.data.saved;
-        trip.savings_percent = response.data.percent;
-      } catch (err) {
-        console.warn(`No savings found for ${trip.trip_name}. Creating with goal $${goal}...`);
-
-        try {
-          await axios.post(`http://localhost:3760/savings`, {
-            trip_id: trip.trip_name,
-            goal: goal
-          });
-
-          trip.savings_goal = goal;
-          trip.savings_saved = 0;
-          trip.savings_percent = 0;
-        } catch (postErr) {
-          console.error(`Failed to create savings goal: ${postErr.message}`);
-          trip.savings_goal = goal;
-          trip.savings_saved = 0;
-          trip.savings_percent = 0;
-        }
-      }
+      await syncSavingsDataForTrip(trip);
     }
 
     res.render('saved', {
@@ -164,7 +141,6 @@ app.get('/saved', async (req, res) => {
     res.status(500).send('Could not load trips from database.');
   }
 });
-
 
 // About
 app.get('/about', (req, res) => {
@@ -228,107 +204,74 @@ app.get('/logout', (req, res) => {
 });
 
 //Air POST
-app.post('/air', (req, res) => {
-  const tripData = { ...req.body, id: Date.now() }; // unique ID
-  savedTrips.push(tripData);
-
-  res.render('confirmation', {
-    title: 'Trip Saved!',
-    tripName: tripData.tripName,
-    budget: tripData.flightBudget
-  });
-});
-
-//Road POST
-app.post('/road', (req, res) => {
-  const tripData = { ...req.body, id: Date.now() }; // unique ID
-  savedTrips.push(tripData);
-
-  res.render('confirmation', {
-    title: 'Trip Saved!',
-    tripName: tripData.tripName,
-    budget: tripData.roadBudget
-  });
-});
-
-//Nature POST
-app.post('/nature', (req, res) => {
-  const tripData = { ...req.body, id: Date.now() }; // unique ID
-  savedTrips.push(tripData);
-
-  res.render('confirmation', {
-    title: 'Trip Saved!',
-    tripName: tripData.tripName,
-    budget: tripData.natureBudget
-  });
-});
-
-
-//Custom POST
-app.post('/custom', async (req, res) => {
-  const {
-    tripName,
-    destination,
-    startDate,
-    endDate,
-    travelers,
-    transport,
-    transportBudget,
-    lodging,
-    lodgingBudget,
-    tripType,
-    destinationType,
-    saving,
-    savingsGoal,
-    wantsPacking,
-    packingList,
-    wantsTodo,
-    todoList
-  } = req.body;
-
+// Air Travel POST
+app.post('/air', async (req, res) => {
   try {
-    await pool.query(
-      `INSERT INTO trips (
-        trip_name, destination, start_date, end_date, travelers,
-        transport, transport_budget, lodging, lodging_budget,
-        trip_type, destination_type, saving, savings_goal,
-        wants_packing, packing_list, wants_todo, todo_list
-      )
-      VALUES (
-        $1, $2, $3, $4, $5,
-        $6, $7, $8, $9,
-        $10, $11, $12, $13,
-        $14, $15, $16, $17
-      )`,
-      [
-        tripName,
-        destination,
-        startDate,
-        endDate,
-        travelers || null,
-        Array.isArray(transport) ? transport : [transport],
-        transportBudget || null,
-        Array.isArray(lodging) ? lodging : [lodging],
-        lodgingBudget || null,
-        tripType,
-        destinationType,
-        saving,
-        savingsGoal || null,
-        wantsPacking,
-        packingList,
-        wantsTodo,
-        todoList
-      ]
-    );
+    normalizeBudget(req, 'air');
+    await insertTripToDB(req);
 
-    res.render('confirmation', {
-      title: 'Trip Saved!',
-      tripName,
-      budget: transportBudget || lodgingBudget || 'N/A'
-    });
+    if (req.body.wantsPacking === 'yes') {
+      await syncPackingItems(req.body.tripName, req.body.packingItems);
+    }
+
+    renderConfirmation(res, req.body.tripName, req.body.flightBudget);
   } catch (err) {
-    console.error('DB Insert Error:', err);
-    res.status(500).send('Failed to save trip to the database.');
+    console.error('Error saving air trip:', err);
+    res.status(500).send('Failed to save air trip.');
+  }
+});
+
+// Road Trip POST
+app.post('/road', async (req, res) => {
+  try {
+    normalizeBudget(req, 'road');
+    await insertTripToDB(req);
+
+    if (req.body.wantsPacking === 'yes') {
+      await syncPackingItems(req.body.tripName, req.body.packingItems);
+    }
+
+    renderConfirmation(res, req.body.tripName, req.body.roadBudget);
+  } catch (err) {
+    console.error('Error saving road trip:', err);
+    res.status(500).send('Failed to save road trip.');
+  }
+});
+
+// Nature Retreat POST
+app.post('/nature', async (req, res) => {
+  try {
+    normalizeBudget(req, 'nature');
+    await insertTripToDB(req);
+
+    if (req.body.wantsPacking === 'yes') {
+      await syncPackingItems(req.body.tripName, req.body.packingItems);
+    }
+
+    renderConfirmation(res, req.body.tripName, req.body.natureBudget);
+  } catch (err) {
+    console.error('Error saving nature trip:', err);
+    res.status(500).send('Failed to save nature trip.');
+  }
+});
+
+// Custom Trip POST
+app.post('/custom', async (req, res) => {
+  try {
+    await insertTripToDB(req);
+
+    if (req.body.wantsPacking === 'yes') {
+      await syncPackingItems(req.body.tripName, req.body.packingItems);
+    }
+
+    renderConfirmation(
+      res,
+      req.body.tripName,
+      req.body.transportBudget || req.body.lodgingBudget
+    );
+  } catch (err) {
+    console.error('Error saving custom trip:', err);
+    res.status(500).send('Failed to save custom trip.');
   }
 });
 

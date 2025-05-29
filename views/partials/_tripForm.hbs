@@ -1,4 +1,4 @@
-<form action="{{formAction}}" method="POST" class="custom-form">
+<form action="{{formAction}}" method="POST" class="custom-form" data-trip-type="{{tripTypeFlag}}">
 
   <!-- Basic Trip Info -->
   <label>Trip Name:</label>
@@ -48,10 +48,10 @@
 
   <label>Estimated Cost (for lodging):</label>
   <input type="number" name="lodgingBudget" />
-{{#if (eq tripTypeFlag "nature")}}
-    <label>Park Entry Fees ($):</label>
-    <input type="number" name="natureBudget" />
-{{/if}}
+  {{#if (eq tripTypeFlag "nature")}}
+      <label>Park Entry Fees ($):</label>
+      <input type="number" name="natureBudget" />
+  {{/if}}
 
   <!-- Trip Type & Destination -->
   <label>Trip Type:</label>
@@ -89,7 +89,12 @@
 
   <div id="packing-section" style="display: none;">
     <label>Packing List:</label>
-    <textarea name="packingList" rows="5" placeholder="e.g. passport, charger, snacks"></textarea>
+    <div id="packing-items-ui">
+      <ul id="packing-items-list">
+        <!-- JS will populate packing items here -->
+      </ul>
+      <input type="text" id="custom-packing-item" placeholder="Other item..." />
+    </div>
   </div>
 
   <!-- To-Do List (Conditional) -->
