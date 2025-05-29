@@ -13,6 +13,7 @@
   },
   "Sunstone Mining Trip": {
     "goal": 150.0,
-    "saved": 270.0
+    "saved": 271.0,
+    "celebrated": true
   }
 }

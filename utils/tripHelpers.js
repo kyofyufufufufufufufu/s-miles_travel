@@ -107,6 +107,7 @@ async function syncSavingsDataForTrip(trip) {
     trip.savings_goal = goal;
     trip.savings_saved = response.data.saved;
     trip.savings_percent = response.data.percent;
+    trip.savings_celebrated = response.data.celebrated;
   } catch (err) {
     console.warn(`No savings found for ${trip.trip_name}. Creating with goal $${goal}...`);
 

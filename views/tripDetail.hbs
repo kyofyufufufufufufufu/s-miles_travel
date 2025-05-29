@@ -47,17 +47,18 @@
         <input type="number" name="amount" id="amount" step="0.01" min="0.01" required />
         <button class="cute-button" type="submit">💾 Save</button>
     </form>
-
-
     {{#if (gte trip.savings_saved trip.savings_goal)}}
-      <div class="goal-message">
+    <div class="goal-message">
         {{#if (eq trip.savings_saved trip.savings_goal)}}
-          🎉 You've reached your goal!
+        🎉 You've reached your goal!
         {{else}}
-          🎉 You've reached your goal (and a little more too)! 😉
+        🎉 You've reached your goal (and a little more too)! 😉
         {{/if}}
+
+        {{#unless trip.savings_celebrated}}
         <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
-      </div>
+        {{/unless}}
+    </div>
     {{/if}}
   </div>
 

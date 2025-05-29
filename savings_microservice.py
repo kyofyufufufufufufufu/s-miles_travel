@@ -24,7 +24,6 @@ def save_data(data):
 
 # Route: Get savings data for a trip
 @app.route('/savings/<trip_id>', methods=['GET'])
-@app.route('/savings/<trip_id>', methods=['GET'])
 def get_savings(trip_id):
     data = load_data()
     trip = data.get(trip_id)
@@ -38,9 +37,9 @@ def get_savings(trip_id):
     return jsonify({
         "goal": goal,
         "saved": saved,
-        "percent": percent
+        "percent": percent,
+        "celebrated": trip.get("celebrated", False)
     })
-
 
 # Route: Create a new savings goal
 @app.route('/savings', methods=['POST'])
@@ -64,6 +63,7 @@ def create_savings():
 
 
 # Route: Update saved amount (contribution)
+# Route: Update saved amount (contribution)
 @app.route('/savings/<trip_id>', methods=['PATCH'])
 def update_savings(trip_id):
     data = load_data()
@@ -72,22 +72,25 @@ def update_savings(trip_id):
     if trip_id not in data:
         return jsonify({"error": "Trip not found"}), 404
 
+    trip = data[trip_id]
+
     # Update saved amount
     if 'amount' in body:
         amount = float(body['amount'])
-
-        # Prevent negative or zero contributions
         if amount <= 0:
-            return jsonify({
-                "error": "Amount must be greater than 0."
-            }), 400
+            return jsonify({"error": "Amount must be greater than 0."}), 400
 
-        # Allow saving beyond goal
-        data[trip_id]['saved'] += amount
+        trip['saved'] += amount
 
-    # Update goal (optional)
+    # Update goal if present
     if 'goal' in body:
-        data[trip_id]['goal'] = float(body['goal'])
+        trip['goal'] = float(body['goal'])
+
+    # Mark celebration only once
+    goal = trip['goal']
+    saved = trip['saved']
+    if saved >= goal and not trip.get('celebrated'):
+        trip['celebrated'] = True
 
     save_data(data)
     return jsonify({"message": "Savings updated"}), 200
