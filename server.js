@@ -14,7 +14,8 @@ const {
   syncPackingItems,
   normalizeBudget,
   renderConfirmation,
-  syncSavingsDataForTrip
+  syncSavingsDataForTrip,
+  syncTodoItems
 } = require('./utils/tripHelpers');
 
 const pool = new Pool({
@@ -115,13 +116,11 @@ app.get('/saved', async (req, res) => {
         saving,
         savings_goal,
         wants_packing,
-        packing_list,
         wants_todo,
-        todo_list,
         created_at
       FROM trips
       ORDER BY created_at DESC
-    `);
+    `); // 🔥 packing_list REMOVED
 
     const trips = result.rows;
 
@@ -194,6 +193,11 @@ app.post('/air', async (req, res) => {
       await syncPackingItems(req.body.tripName, req.body.packingItems);
     }
 
+    if (req.body.todoItems) {
+      const todoLines = req.body.todoItems.split('\n').map(line => line.trim()).filter(Boolean);
+      await syncTodoItems(req.body.tripName, todoLines);
+    }
+
     renderConfirmation(res, req.body.tripName, req.body.flightBudget);
   } catch (err) {
     console.error('Error saving air trip:', err);
@@ -209,6 +213,11 @@ app.post('/road', async (req, res) => {
 
     if (req.body.wantsPacking === 'yes') {
       await syncPackingItems(req.body.tripName, req.body.packingItems);
+    }
+  
+    if (req.body.todoItems) {
+      const todoLines = req.body.todoItems.split('\n').map(line => line.trim()).filter(Boolean);
+      await syncTodoItems(req.body.tripName, todoLines);
     }
 
     renderConfirmation(res, req.body.tripName, req.body.roadBudget);
@@ -228,6 +237,11 @@ app.post('/nature', async (req, res) => {
       await syncPackingItems(req.body.tripName, req.body.packingItems);
     }
 
+    if (req.body.todoItems) {
+      const todoLines = req.body.todoItems.split('\n').map(line => line.trim()).filter(Boolean);
+      await syncTodoItems(req.body.tripName, todoLines);
+    }
+
     renderConfirmation(res, req.body.tripName, req.body.natureBudget);
   } catch (err) {
     console.error('Error saving nature trip:', err);
@@ -242,6 +256,11 @@ app.post('/custom', async (req, res) => {
 
     if (req.body.wantsPacking === 'yes') {
       await syncPackingItems(req.body.tripName, req.body.packingItems);
+    }
+
+    if (req.body.todoItems) {
+      const todoLines = req.body.todoItems.split('\n').map(line => line.trim()).filter(Boolean);
+      await syncTodoItems(req.body.tripName, todoLines);
     }
 
     renderConfirmation(
@@ -284,6 +303,14 @@ app.get('/trip/:tripName', async (req, res) => {
     const packing = await axios.get(`http://localhost:3777/packing/${encodeURIComponent(tripName)}`);
     trip.packingList = packing.data;
     console.log(trip.packingList)
+
+    try {
+      const todoResponse = await axios.get(`http://localhost:3888/todo/${encodeURIComponent(tripName)}`);
+      trip.todoList = todoResponse.data;
+    } catch (todoErr) {
+      console.warn(`No to-do list found for ${tripName}.`);
+      trip.todoList = []; // fallback so the page still works
+    }
 
     res.render('tripDetail', { title: trip.trip_name, trip });
   } catch (err) {

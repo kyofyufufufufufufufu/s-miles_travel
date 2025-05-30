@@ -74,10 +74,18 @@
     </ul>
   {{/if}}
 
-  {{#if trip.wants_todo}}
+  {{#if trip.todoList.length}}
     <h4>To-Do List</h4>
-    <p>{{trip.todo_list}}</p>
+    <ul class="todo-checklist">
+      {{#each trip.todoList}}
+        <li class="todo-item {{#if done}}done{{/if}}">
+          <input type="checkbox" disabled {{#if done}}checked{{/if}} />
+          <label>{{this.task}}</label>
+        </li>
+      {{/each}}
+    </ul>
   {{/if}}
+
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>

@@ -25,9 +25,7 @@ async function insertTripToDB(req) {
     saving,
     savingsGoal,
     wantsPacking,
-    packingList,
-    wantsTodo,
-    todoList
+    wantsTodo
   } = req.body;
 
   await pool.query(
@@ -35,12 +33,12 @@ async function insertTripToDB(req) {
       trip_name, destination, start_date, end_date, travelers,
       transport, transport_budget, lodging, lodging_budget,
       trip_type, destination_type, saving, savings_goal,
-      wants_packing, packing_list, wants_todo, todo_list
+      wants_packing, wants_todo
     ) VALUES (
       $1, $2, $3, $4, $5,
       $6, $7, $8, $9,
       $10, $11, $12, $13,
-      $14, $15, $16, $17
+      $14, $15
     )`,
     [
       tripName,
@@ -57,9 +55,7 @@ async function insertTripToDB(req) {
       saving,
       savingsGoal || null,
       wantsPacking,
-      packingList,
-      wantsTodo,
-      todoList
+      wantsTodo
     ]
   );
 }
@@ -129,10 +125,26 @@ async function syncSavingsDataForTrip(trip) {
   }
 }
 
+async function syncTodoItems(tripName, todoItems) {
+  const tripId = encodeURIComponent(tripName);
+  const items = Array.isArray(todoItems) ? todoItems : [todoItems];
+
+  for (const item of items) {
+    const trimmed = item.trim();
+    if (trimmed) {
+      await axios.post(`http://localhost:3888/todo/${tripId}`, {
+        task: trimmed
+      });
+    }
+  }
+}
+
+
 module.exports = {
   insertTripToDB,
   syncPackingItems,
   normalizeBudget,
   renderConfirmation,
-  syncSavingsDataForTrip
+  syncSavingsDataForTrip,
+  syncTodoItems
 };

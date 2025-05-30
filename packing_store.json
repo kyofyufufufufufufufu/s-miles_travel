@@ -48,5 +48,19 @@
       "item": "Wallet \ud83d\udc5b",
       "checked": false
     }
+  ],
+  "wjeifohweoih": [
+    {
+      "item": "Band-aids \ud83e\ude79",
+      "checked": true
+    },
+    {
+      "item": "Body wash or soap \ud83e\uddfd",
+      "checked": true
+    },
+    {
+      "item": "bug spray",
+      "checked": true
+    }
   ]
 }
