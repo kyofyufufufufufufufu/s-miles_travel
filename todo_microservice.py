@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
-import os
-import json
+from flask_cors import CORS
+import os, json
 
 app = Flask(__name__)
 DATA_FILE = 'saved_todos.json'
+CORS(app)  # ✅ Allow cross-origin requests
 
 # Ensure the file exists
 if not os.path.exists(DATA_FILE):
@@ -18,13 +19,12 @@ def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
 
-@app.route('/todo/<trip_name>', methods=['GET'])  # 🔁 renamed from /todos
+@app.route('/todo/<trip_name>', methods=['GET'])
 def get_tasks(trip_name):
     data = load_data()
-    tasks = data.get(trip_name, [])
-    return jsonify(tasks)
+    return jsonify(data.get(trip_name, []))
 
-@app.route('/todo/<trip_name>', methods=['POST'])  # 🔁 renamed from /todos
+@app.route('/todo/<trip_name>', methods=['POST'])
 def add_task(trip_name):
     data = load_data()
     task_text = request.json.get('task')
@@ -36,25 +36,23 @@ def add_task(trip_name):
     save_data(data)
     return jsonify(task), 201
 
-@app.route('/todo/<trip_name>/<int:task_index>', methods=['PATCH'])  # 🔁 renamed
-def update_task(trip_name, task_index):
+@app.route('/todo/<trip_name>/<int:task_index>', methods=['PATCH'])
+def toggle_task(trip_name, task_index):
     data = load_data()
+
     if trip_name not in data or task_index >= len(data[trip_name]):
         return jsonify({'error': 'Task not found'}), 404
 
-    task = data[trip_name][task_index]
-    new_text = request.json.get('task')
-    done_status = request.json.get('done')
+    try:
+        task = data[trip_name][task_index]
+        task['done'] = not task.get('done', False)  # ✅ Toggle it like packing
+        print(f"Toggled todo {task_index} in '{trip_name}' to {task['done']}")
+        save_data(data)
+        return jsonify({'message': 'Task status toggled'}), 200
+    except IndexError:
+        return jsonify({'error': 'Task index out of range'}), 404
 
-    if new_text is not None:
-        task['task'] = new_text
-    if done_status is not None:
-        task['done'] = done_status
-
-    save_data(data)
-    return jsonify(task)
-
-@app.route('/todo/<trip_name>/<int:task_index>', methods=['DELETE'])  # 🔁 renamed
+@app.route('/todo/<trip_name>/<int:task_index>', methods=['DELETE'])
 def delete_task(trip_name, task_index):
     data = load_data()
     if trip_name not in data or task_index >= len(data[trip_name]):

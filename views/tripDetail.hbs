@@ -78,8 +78,8 @@
     <h4>To-Do List</h4>
     <ul class="todo-checklist">
       {{#each trip.todoList}}
-        <li class="todo-item {{#if done}}done{{/if}}">
-          <input type="checkbox" disabled {{#if done}}checked{{/if}} />
+        <li class="todo-item {{#if done}}checked{{/if}}">
+          <input type="checkbox" data-index="{{@index}}" {{#if done}}checked{{/if}} />
           <label>{{this.task}}</label>
         </li>
       {{/each}}
@@ -105,9 +105,9 @@
       });
     }
 
-    // ✅ Packing list checkbox toggle logic
-    const tripId = "{{trip.trip_name}}"; // injected into JS as string
+    const tripId = "{{trip.trip_name}}"; // Injected trip name
 
+    // ✅ Packing list checkbox toggle logic (unchanged)
     document.querySelectorAll('.packing-checklist input[type="checkbox"]').forEach((checkbox) => {
       checkbox.addEventListener('change', async (e) => {
         const index = e.target.dataset.index;
@@ -118,12 +118,33 @@
           });
 
           const result = await response.json();
-          console.log('PATCH response:', result);
+          console.log('PATCH response (packing):', result);
 
           const li = e.target.closest('li');
           if (li) li.classList.toggle('checked');
         } catch (err) {
           console.error('Error updating packing item:', err);
+        }
+      });
+    });
+
+    // ✅ To-do list checkbox toggle logic (now identical to packing list)
+    document.querySelectorAll('.todo-checklist input[type="checkbox"]').forEach((checkbox) => {
+      checkbox.addEventListener('change', async (e) => {
+        const index = e.target.dataset.index;
+
+        try {
+          const response = await fetch(`http://localhost:3888/todo/${encodeURIComponent(tripId)}/${index}`, {
+            method: 'PATCH'
+          });
+
+          const result = await response.json();
+          console.log('PATCH response (todo):', result);
+
+          const li = e.target.closest('li');
+          if (li) li.classList.toggle('checked');
+        } catch (err) {
+          console.error('Error updating todo item:', err);
         }
       });
     });
