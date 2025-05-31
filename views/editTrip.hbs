@@ -1,0 +1,43 @@
+<h2>Edit Trip: {{trip.trip_name}}</h2>
+
+<section class="custom-trip">
+  {{> _tripEditForm trip=trip formAction="/edit/" tripTypeFlag=trip.trip_type }}
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tripId = "{{trip.trip_name}}";
+
+  // Packing List PATCH
+  document.querySelectorAll('.packing-checklist input[type="checkbox"]').forEach((checkbox) => {
+    checkbox.addEventListener('change', async (e) => {
+      const index = e.target.dataset.index;
+      try {
+        const response = await fetch(`http://localhost:3777/packing/${encodeURIComponent(tripId)}/${index}`, {
+          method: 'PATCH'
+        });
+        const result = await response.json();
+        e.target.closest('li')?.classList.toggle('checked');
+      } catch (err) {
+        console.error('Packing update failed:', err);
+      }
+    });
+  });
+
+  // To-Do PATCH
+  document.querySelectorAll('.todo-checklist input[type="checkbox"]').forEach((checkbox) => {
+    checkbox.addEventListener('change', async (e) => {
+      const index = e.target.dataset.index;
+      try {
+        const response = await fetch(`http://localhost:3888/todo/${encodeURIComponent(tripId)}/${index}`, {
+          method: 'PATCH'
+        });
+        const result = await response.json();
+        e.target.closest('li')?.classList.toggle('checked');
+      } catch (err) {
+        console.error('To-do update failed:', err);
+      }
+    });
+  });
+});
+</script>

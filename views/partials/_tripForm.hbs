@@ -28,12 +28,12 @@
   <label>Estimated Cost (for transport):</label>
   <input type="number" name="transportBudget" />
     {{#if (eq tripTypeFlag "road")}}
-    <label>Gas & Tolls ($):</label>
+    <label>Gas & Tolls:</label>
     <input type="number" name="roadBudget" />
     {{/if}}
 
     {{#if (eq tripTypeFlag "air")}}
-        <label>Flight Cost ($):</label>
+        <label>Additional Boarding Fee:</label>
         <input type="number" name="flightBudget" />
     {{/if}}
 
@@ -44,6 +44,7 @@
     <label><input type="checkbox" name="lodging" value="airbnb"> Airbnb</label>
     <label><input type="checkbox" name="lodging" value="camping"> Camping</label>
     <label><input type="checkbox" name="lodging" value="withFriends"> With Friends</label>
+    <label><input type="checkbox" name="lodging" value="withFriends"> Other </label>
   </fieldset>
 
   <label>Estimated Cost (for lodging):</label>
@@ -63,8 +64,8 @@
   <!-- Savings (Conditional) -->
   <label>Are you saving for this trip?</label>
   <select name="saving" id="saving">
-    <option value="no">No</option>
     <option value="yes">Yes</option>
+    <option value="no">No</option>
   </select>
 
   <div id="saving-section" style="display: none;">
@@ -75,8 +76,8 @@
   <!-- Packing List (Conditional) -->
   <label>Do you need to pack?</label>
   <select id="show-packing" name="wantsPacking">
-    <option value="no">No</option>
     <option value="yes">Yes</option>
+    <option value="no">No</option>
   </select>
 
   <div id="packing-section" style="display: none;">
@@ -85,15 +86,14 @@
       <ul id="packing-items-list">
         <!-- JS will populate packing items here -->
       </ul>
-      <input type="text" id="custom-packing-item" placeholder="Other item..." />
     </div>
   </div>
 
   <!-- To-Do List (Conditional) -->
   <label>Do you want to add a to-do list?</label>
   <select id="show-todo" name="wantsTodo">
-    <option value="no">No</option>
     <option value="yes">Yes</option>
+    <option value="no">No</option>
   </select>
 
   <div id="todo-section" style="display: none;">

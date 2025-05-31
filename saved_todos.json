@@ -3,6 +3,10 @@
     {
       "task": "Pack hiking boots",
       "done": false
+    },
+    {
+      "task": "Pack hiking boots, test",
+      "done": false
     }
   ],
   "jewgoih": [

@@ -62,5 +62,11 @@
       "item": "bug spray",
       "checked": true
     }
+  ],
+  "cucu": [
+    {
+      "item": "testing item",
+      "checked": false
+    }
   ]
 }

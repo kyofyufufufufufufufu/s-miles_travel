@@ -1,0 +1,156 @@
+<form action="{{formAction}}{{trip.trip_name}}" method="POST" class="custom-form" data-trip-type="{{tripTypeFlag}}">
+
+  <!-- Basic Info -->
+  <label>Trip Name:</label>
+  <input type="text" name="tripName" required value="{{trip.trip_name}}" readonly />
+
+  <label>Destination:</label>
+  <input type="text" name="destination" required value="{{trip.destination}}" />
+
+  <label>Start Date:</label>
+  <input type="date" name="start_date" required value="{{trip.start_date}}" />
+
+  <label>End Date:</label>
+  <input type="date" name="end_date" required value="{{trip.end_date}}" />
+
+  <label>Number of Travelers:</label>
+  <input type="number" name="travelers" min="1" required value="{{trip.travelers}}" />
+
+  <!-- Transportation -->
+  <fieldset>
+    <legend>Traveling By:</legend>
+    <label><input type="checkbox" name="transport" value="plane" {{#if (eq trip.transport 'plane')}}checked{{/if}}> Plane</label>
+    <label><input type="checkbox" name="transport" value="train" {{#if (eq trip.transport 'train')}}checked{{/if}}> Train</label>
+    <label><input type="checkbox" name="transport" value="car" {{#if (eq trip.transport 'car')}}checked{{/if}}> Car</label>
+    <label><input type="checkbox" name="transport" value="other" {{#if (eq trip.transport 'other')}}checked{{/if}}> Other</label>
+  </fieldset>
+
+  <label>Estimated Cost (for transport):</label>
+  <input type="number" name="transport_budget" value="{{trip.transport_budget}}" />
+
+  {{#if (eq tripTypeFlag "road")}}
+    <label>Gas & Tolls:</label>
+    <input type="number" name="roadBudget" />
+  {{/if}}
+
+  {{#if (eq tripTypeFlag "air")}}
+    <label>Additional Boarding Fee:</label>
+    <input type="number" name="flightBudget" />
+  {{/if}}
+
+  <!-- Lodging -->
+  <fieldset>
+    <legend>Lodging:</legend>
+    <label><input type="checkbox" name="lodging" value="hotel" {{#if (eq trip.lodging 'hotel')}}checked{{/if}}> Hotel</label>
+    <label><input type="checkbox" name="lodging" value="airbnb" {{#if (eq trip.lodging 'airbnb')}}checked{{/if}}> Airbnb</label>
+    <label><input type="checkbox" name="lodging" value="camping" {{#if (eq trip.lodging 'camping')}}checked{{/if}}> Camping</label>
+    <label><input type="checkbox" name="lodging" value="withFriends" {{#if (eq trip.lodging 'withFriends')}}checked{{/if}}> With Friends</label>
+    <label><input type="checkbox" name="lodging" value="other" {{#if (eq trip.lodging 'other')}}checked{{/if}}> Other</label>
+  </fieldset>
+
+  <label>Estimated Cost (for lodging):</label>
+  <input type="number" name="lodging_budget" value="{{trip.lodging_budget}}" />
+
+  {{#if (eq tripTypeFlag "nature")}}
+    <label>Park Entry Fees ($):</label>
+    <input type="number" name="natureBudget" />
+  {{/if}}
+
+  <!-- Destination and Budget -->
+  <label>Destination Type:</label>
+  <select name="destination_type">
+    <option value="domestic" {{#if (eq trip.destination_type 'domestic')}}selected{{/if}}>Domestic</option>
+    <option value="international" {{#if (eq trip.destination_type 'international')}}selected{{/if}}>International</option>
+  </select>
+
+  <label>Are you saving for this trip?</label>
+  <select name="saving">
+    <option value="yes" {{#if (eq trip.saving 'yes')}}selected{{/if}}>Yes</option>
+    <option value="no" {{#if (eq trip.saving 'no')}}selected{{/if}}>No</option>
+  </select>
+
+  <label>Budget Goal ($):</label>
+  <input type="number" name="savings_goal" value="{{trip.savings_goal}}" />
+
+  <!-- Pack toggle -->
+  <label>Do you need to pack?</label>
+  <select id="show-packing" name="wantsPacking">
+    <option value="yes" {{#if (eq trip.wants_packing 'yes')}}selected{{/if}}>Yes</option>
+    <option value="no" {{#if (eq trip.wants_packing 'no')}}selected{{/if}}>No</option>
+  </select>
+
+  <div id="packing-section" style="{{#if (eq trip.wants_packing 'yes')}}display: block;{{else}}display: none;{{/if}}">
+    <h4>Packing List</h4>
+    <ul id="packing-items-list" class="packing-checklist">
+      <!-- Will be populated by JS -->
+    </ul>
+  </div>
+
+  <!-- To-do toggle -->
+  <label>Do you want to add a to-do list?</label>
+  <select id="show-todo" name="wantsTodo">
+    <option value="yes" {{#if (eq trip.wants_todo 'yes')}}selected{{/if}}>Yes</option>
+    <option value="no" {{#if (eq trip.wants_todo 'no')}}selected{{/if}}>No</option>
+  </select>
+
+  <div id="todo-section" style="{{#if (eq trip.wants_todo 'yes')}}display: block;{{else}}display: none;{{/if}}">
+    <label for="todoItems">To-Do List Items (one per line):</label>
+    <textarea id="todoItems" name="todoItems" rows="4" placeholder="e.g. Pack sunscreen&#10;Call hotel&#10;Print tickets">{{trip.todoListRaw}}</textarea>
+  </div>
+
+  <button type="submit" class="trip-button">Save Changes</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const tripId = "{{trip.trip_name}}";
+
+  // Toggle sections based on dropdown
+  const packSelect = document.getElementById('show-packing');
+  const packSection = document.getElementById('packing-section');
+  packSelect?.addEventListener('change', () => {
+    packSection.style.display = packSelect.value === 'yes' ? 'block' : 'none';
+  });
+
+  const todoSelect = document.getElementById('show-todo');
+  const todoSection = document.getElementById('todo-section');
+  todoSelect?.addEventListener('change', () => {
+    todoSection.style.display = todoSelect.value === 'yes' ? 'block' : 'none';
+  });
+
+  // Load packing items from microservice
+  try {
+    const res = await fetch(`http://localhost:3777/packing/${encodeURIComponent(tripId)}`);
+    const items = await res.json();
+    const list = document.getElementById("packing-items-list");
+    list.innerHTML = "";
+    items.forEach((entry, i) => {
+      const li = document.createElement("li");
+      li.className = "packing-item";
+      if (entry.checked) li.classList.add("checked");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.dataset.index = i;
+      checkbox.checked = entry.checked;
+
+      checkbox.addEventListener("change", async () => {
+        await fetch(`http://localhost:3777/packing/${encodeURIComponent(tripId)}/${i}`, {
+          method: "PATCH"
+        });
+        li.classList.toggle("checked");
+      });
+
+      const label = document.createElement("label");
+      label.textContent = entry.item;
+      li.appendChild(checkbox);
+      li.appendChild(label);
+      list.appendChild(li);
+    });
+  } catch (e) {
+    console.error("Could not load packing list:", e);
+  }
+
+  // ✅ Do NOT populate the to-do list via JS anymore — we're editing via textarea
+});
+</script>

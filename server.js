@@ -38,6 +38,11 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3157;
 
+const fs = require('fs');
+
+// Path to your JSON file that stores trip data
+const TRIP_DATA_FILE = path.join(__dirname, 'savings_data.json');
+
 // Step 1: Create hbs instance (before registering helpers)
 const hbs = exphbs.create({ extname: '.hbs' });
 
@@ -125,7 +130,7 @@ app.get('/saved', async (req, res) => {
         created_at
       FROM trips
       ORDER BY created_at DESC
-    `); // 🔥 packing_list REMOVED
+    `);
 
     const trips = result.rows;
 
@@ -187,7 +192,80 @@ app.get('/custom', (req, res) => {
   });
 });
 
-//Air POST
+app.get('/trip/:tripName', async (req, res) => {
+  const { tripName } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM trips WHERE trip_name = $1', [tripName]);
+    const trip = result.rows[0];
+    if (!trip) return res.status(404).send('Trip not found');
+
+    // Fetch and update savings data
+    await syncSavingsDataForTrip(trip);
+
+    // Fetch packing list
+    const packing = await axios.get(`http://localhost:3777/packing/${encodeURIComponent(tripName)}`);
+    trip.packingList = packing.data;
+    console.log(trip.packingList)
+
+    try {
+      const todoResponse = await axios.get(`http://localhost:3888/todo/${encodeURIComponent(tripName)}`);
+      trip.todoList = todoResponse.data;
+    } catch (todoErr) {
+      console.warn(`No to-do list found for ${tripName}.`);
+      trip.todoList = [];
+    }
+
+    res.render('tripDetail', { title: trip.trip_name, trip });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error loading trip');
+  }
+});
+
+app.get('/convert', (req, res) => {
+  res.render('converter', { title: 'Currency Converter' });
+});
+
+app.get('/edit/:tripName', async (req, res) => {
+  const { tripName } = req.params;
+
+  try {
+    const result = await pool.query('SELECT * FROM trips WHERE trip_name = $1', [tripName]);
+    const trip = result.rows[0];
+    if (!trip) return res.status(404).send('Trip not found');
+
+    // 🧠 Get packing list
+    try {
+      const packRes = await axios.get(`http://localhost:3777/packing/${encodeURIComponent(tripName)}`);
+      trip.packingList = packRes.data;
+    } catch (e) {
+      console.warn(`No packing list found for ${tripName}`);
+      trip.packingList = [];
+    }
+
+    // 🧠 Get to-do list + raw format
+    try {
+      const todoRes = await axios.get(`http://localhost:3888/todo/${encodeURIComponent(tripName)}`);
+      trip.todoList = todoRes.data;
+      trip.todoListRaw = trip.todoList.map(item => item.task).join('\n');
+    } catch (e) {
+      console.warn(`No todo list found for ${tripName}`);
+      trip.todoList = [];
+      trip.todoListRaw = '';
+    }
+
+    res.render('editTrip', {
+      title: `Edit Trip: ${tripName}`,
+      trip,
+      formAction: '/edit/',
+      tripTypeFlag: trip.trip_type
+    });
+  } catch (err) {
+    console.error('Edit trip load failed:', err);
+    res.status(500).send('Failed to load trip.');
+  }
+});
+
 // Air Travel POST
 app.post('/air', async (req, res) => {
   try {
@@ -279,6 +357,7 @@ app.post('/custom', async (req, res) => {
   }
 });
 
+// Savings POST (Trip Details)
 app.post('/savings/add', async (req, res) => {
   const { trip_id, amount } = req.body;
 
@@ -287,47 +366,14 @@ app.post('/savings/add', async (req, res) => {
       amount: parseFloat(amount)
     });
     console.log(`Added $${amount} to savings for ${trip_id}`);
-    res.redirect(`/trip/${encodeURIComponent(trip_id)}`); // ✅ redirect to trip detail view
+    res.redirect(`/trip/${encodeURIComponent(trip_id)}`);
   } catch (err) {
     console.error('Savings update failed:', err.message);
-    res.redirect(`/trip/${encodeURIComponent(trip_id)}`); // ✅ redirect even on error
+    res.redirect(`/trip/${encodeURIComponent(trip_id)}`);
   }
 });
 
-app.get('/trip/:tripName', async (req, res) => {
-  const { tripName } = req.params;
-  try {
-    const result = await pool.query('SELECT * FROM trips WHERE trip_name = $1', [tripName]);
-    const trip = result.rows[0];
-    if (!trip) return res.status(404).send('Trip not found');
-
-    // ✅ Fetch and update savings data
-    await syncSavingsDataForTrip(trip);
-
-    // ✅ Fetch packing list
-    const packing = await axios.get(`http://localhost:3777/packing/${encodeURIComponent(tripName)}`);
-    trip.packingList = packing.data;
-    console.log(trip.packingList)
-
-    try {
-      const todoResponse = await axios.get(`http://localhost:3888/todo/${encodeURIComponent(tripName)}`);
-      trip.todoList = todoResponse.data;
-    } catch (todoErr) {
-      console.warn(`No to-do list found for ${tripName}.`);
-      trip.todoList = []; // fallback so the page still works
-    }
-
-    res.render('tripDetail', { title: trip.trip_name, trip });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error loading trip');
-  }
-});
-
-app.get('/convert', (req, res) => {
-  res.render('converter', { title: 'Currency Converter' });
-});
-
+// Currency converting POST
 app.post('/convert', async (req, res) => {
   const { from, to, amount } = req.body;
   const sock = new zmq.Request();
@@ -346,7 +392,115 @@ app.post('/convert', async (req, res) => {
   }
 });
 
-// Start the server
+app.post('/edit/:tripName', async (req, res) => {
+  const { tripName } = req.params;
+  let {
+    destination,
+    start_date,
+    end_date,
+    travelers,
+    transport,
+    transport_budget,
+    lodging,
+    lodging_budget,
+    savings_goal,
+    destination_type,
+    saving,
+    wantsPacking,
+    wantsTodo,
+    packingItems,
+    todoItems
+  } = req.body;
+
+  // 🧹 Normalize transport and lodging to arrays (even if only one checkbox was selected)
+  if (!Array.isArray(transport)) {
+    transport = transport ? [transport] : [];
+  }
+  if (!Array.isArray(lodging)) {
+    lodging = lodging ? [lodging] : [];
+  }
+
+  try {
+    await pool.query(
+      `UPDATE trips
+       SET destination = $1,
+           start_date = $2,
+           end_date = $3,
+           travelers = $4,
+           transport = $5,
+           transport_budget = $6,
+           lodging = $7,
+           lodging_budget = $8,
+           savings_goal = $9,
+           destination_type = $10,
+           saving = $11,
+           wants_packing = $12,
+           wants_todo = $13
+       WHERE trip_name = $14`,
+      [
+        destination,
+        start_date,
+        end_date,
+        travelers,
+        transport,         // ✅ now always an array
+        transport_budget,
+        lodging,           // ✅ now always an array
+        lodging_budget,
+        savings_goal,
+        destination_type,
+        saving,
+        wantsPacking,
+        wantsTodo,
+        tripName
+      ]
+    );
+
+    // 🔄 Sync packing list
+    if (wantsPacking === 'yes' && packingItems) {
+      await syncPackingItems(tripName, packingItems);
+    }
+
+    // 🔄 Sync to-do list
+    if (todoItems) {
+      const todoLines = todoItems
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+      await syncTodoItems(tripName, todoLines);
+    }
+
+    res.redirect(`/trip/${encodeURIComponent(tripName)}`);
+  } catch (err) {
+    console.error('Failed to update trip:', err);
+    res.status(500).send('Trip update failed.');
+  }
+});
+
+app.post('/delete/:trip_id', async (req, res) => {
+  const tripId = req.params.trip_id;
+
+  try {
+    await pool.query('DELETE FROM trips WHERE trip_name = $1', [tripId]);
+    res.redirect('/saved');
+  } catch (err) {
+    console.error('Failed to delete trip:', err);
+    res.status(500).send('Failed to delete trip.');
+  }
+});
+
+// Define data functions early so they’re available below
+function loadData() {
+  if (!fs.existsSync(TRIP_DATA_FILE)) {
+    fs.writeFileSync(TRIP_DATA_FILE, '{}', 'utf8');
+  }
+  const fileContent = fs.readFileSync(TRIP_DATA_FILE, 'utf8');
+  return JSON.parse(fileContent || '{}');
+}
+
+function saveData(data) {
+  fs.writeFileSync(TRIP_DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+}
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
