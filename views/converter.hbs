@@ -1,0 +1,79 @@
+{{!-- views/converter.hbs --}}
+{{!< main}} <!-- This tells Handlebars to use main.hbs as the layout -->
+
+<section class="converter-page">
+  <h1>Currency Converter</h1>
+  <p class="converter-intro">
+    Need to know how much you need to convert for your trip? Use this calculator to help you get started.
+  </p>
+
+  <form id="currency-form" class="converter-form">
+    <div class="converter-row">
+      <label for="from">From:</label>
+      <select id="from" name="from" required>
+        <option value="USD">USD - US Dollar</option>
+        <option value="EUR">EUR - Euro</option>
+        <option value="JPY">JPY - Japanese Yen</option>
+        <option value="GBP">GBP - British Pound</option>
+        <option value="CAD">CAD - Canadian Dollar</option>
+        <option value="AUD">AUD - Australian Dollar</option>
+        <!-- Add more as needed -->
+      </select>
+    </div>
+
+    <div class="converter-row">
+      <label for="to">To:</label>
+      <select id="to" name="to" required>
+        <option value="EUR">EUR - Euro</option>
+        <option value="USD">USD - US Dollar</option>
+        <option value="JPY">JPY - Japanese Yen</option>
+        <option value="GBP">GBP - British Pound</option>
+        <option value="CAD">CAD - Canadian Dollar</option>
+        <option value="AUD">AUD - Australian Dollar</option>
+        <!-- Add more as needed -->
+      </select>
+    </div>
+
+    <div class="converter-row">
+      <label for="amount">Amount:</label>
+      <input type="number" id="amount" name="amount" placeholder="Enter amount" required />
+    </div>
+
+    <button type="submit">Convert</button>
+  </form>
+
+  <div id="conversion-result" class="conversion-result">
+    <!-- Result will be inserted here -->
+  </div>
+</section>
+
+<script>
+  document.getElementById('currency-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const from = document.getElementById('from').value;
+    const to = document.getElementById('to').value;
+    const amount = document.getElementById('amount').value;
+
+    try {
+      const response = await fetch('/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from, to, amount })
+      });
+
+      const data = await response.json();
+      const resultDiv = document.getElementById('conversion-result');
+
+      if (data.converted) {
+        resultDiv.innerHTML = `<strong>${amount} ${from}</strong> is approximately <strong>${data.converted} ${to}</strong>`;
+      } else {
+        resultDiv.innerHTML = `<span style="color:red;">Conversion failed. Please try again.</span>`;
+      }
+    } catch (err) {
+      console.error('Conversion error:', err);
+      document.getElementById('conversion-result').innerHTML = `<span style="color:red;">Error fetching conversion.</span>`;
+    }
+  });
+</script>
+console.log({ from, to, amount });

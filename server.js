@@ -1,6 +1,10 @@
 require('dotenv').config();
 console.log('Database URL:', process.env.DATABASE_URL);
 
+const zmq = require('zeromq');      // ✅ Make sure this is also required
+const API_KEY = process.env.API_KEY;
+console.log("Loaded API KEY:", API_KEY);
+
 const session = require('express-session');
 
 const bcrypt = require('bcrypt');
@@ -78,6 +82,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
 
 app.use(session({
   secret: 'smiles-secret-key', // use dotenv later
@@ -316,6 +321,28 @@ app.get('/trip/:tripName', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Error loading trip');
+  }
+});
+
+app.get('/convert', (req, res) => {
+  res.render('converter', { title: 'Currency Converter' });
+});
+
+app.post('/convert', async (req, res) => {
+  const { from, to, amount } = req.body;
+  const sock = new zmq.Request();
+
+  try {
+    await sock.connect("tcp://localhost:7777");
+    await sock.send(JSON.stringify({ from, to, amount, api_key: API_KEY }));
+
+    const [raw] = await sock.receive();
+    const converted = JSON.parse(raw.toString()).converted_amount;
+
+    res.json({ converted });
+  } catch (err) {
+    console.error('Conversion error:', err);
+    res.status(500).json({ error: 'Conversion failed.' });
   }
 });
 
