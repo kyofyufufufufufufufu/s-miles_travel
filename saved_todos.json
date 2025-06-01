@@ -1,18 +1,14 @@
 {
-  "cucu": [
-    {
-      "task": "Pack hiking boots",
-      "done": false
-    },
-    {
-      "task": "Pack hiking boots, test",
-      "done": false
-    }
-  ],
   "jewgoih": [
     {
       "task": "jsdfowheoighewoigh",
       "done": true
+    }
+  ],
+  "cucu": [
+    {
+      "task": "call hotel, find lawyer, grab card, take photos",
+      "done": false
     }
   ]
 }

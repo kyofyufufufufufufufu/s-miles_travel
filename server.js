@@ -276,8 +276,19 @@ app.post('/air', async (req, res) => {
       await syncPackingItems(req.body.tripName, req.body.packingItems);
     }
 
+    if (req.body.wantsTodo === 'yes') {
+      try {
+        await axios.post(`http://localhost:3888/todo/init/${encodeURIComponent(req.body.tripName)}`);
+      } catch (err) {
+        console.warn(`Failed to initialize todo list for ${req.body.tripName}:`, err.message);
+      }
+    }
+
     if (req.body.todoItems) {
-      const todoLines = req.body.todoItems.split('\n').map(line => line.trim()).filter(Boolean);
+      const todoLines = req.body.todoItems
+        .split('\n')
+        .map(line => line.trim().replace(/,+$/, ''))
+        .filter(Boolean);
       await syncTodoItems(req.body.tripName, todoLines);
     }
 
@@ -297,9 +308,20 @@ app.post('/road', async (req, res) => {
     if (req.body.wantsPacking === 'yes') {
       await syncPackingItems(req.body.tripName, req.body.packingItems);
     }
-  
+
+    if (req.body.wantsTodo === 'yes') {
+      try {
+        await axios.post(`http://localhost:3888/todo/init/${encodeURIComponent(req.body.tripName)}`);
+      } catch (err) {
+        console.warn(`Failed to initialize todo list for ${req.body.tripName}:`, err.message);
+      }
+    }
+
     if (req.body.todoItems) {
-      const todoLines = req.body.todoItems.split('\n').map(line => line.trim()).filter(Boolean);
+      const todoLines = req.body.todoItems
+        .split('\n')
+        .map(line => line.trim().replace(/,+$/, ''))
+        .filter(Boolean);
       await syncTodoItems(req.body.tripName, todoLines);
     }
 
@@ -320,8 +342,19 @@ app.post('/nature', async (req, res) => {
       await syncPackingItems(req.body.tripName, req.body.packingItems);
     }
 
+    if (req.body.wantsTodo === 'yes') {
+      try {
+        await axios.post(`http://localhost:3888/todo/init/${encodeURIComponent(req.body.tripName)}`);
+      } catch (err) {
+        console.warn(`Failed to initialize todo list for ${req.body.tripName}:`, err.message);
+      }
+    }
+
     if (req.body.todoItems) {
-      const todoLines = req.body.todoItems.split('\n').map(line => line.trim()).filter(Boolean);
+      const todoLines = req.body.todoItems
+        .split('\n')
+        .map(line => line.trim().replace(/,+$/, ''))
+        .filter(Boolean);
       await syncTodoItems(req.body.tripName, todoLines);
     }
 
@@ -341,8 +374,19 @@ app.post('/custom', async (req, res) => {
       await syncPackingItems(req.body.tripName, req.body.packingItems);
     }
 
+    if (req.body.wantsTodo === 'yes') {
+      try {
+        await axios.post(`http://localhost:3888/todo/init/${encodeURIComponent(req.body.tripName)}`);
+      } catch (err) {
+        console.warn(`Failed to initialize todo list for ${req.body.tripName}:`, err.message);
+      }
+    }
+
     if (req.body.todoItems) {
-      const todoLines = req.body.todoItems.split('\n').map(line => line.trim()).filter(Boolean);
+      const todoLines = req.body.todoItems
+        .split('\n')
+        .map(line => line.trim().replace(/,+$/, ''))
+        .filter(Boolean);
       await syncTodoItems(req.body.tripName, todoLines);
     }
 
@@ -412,13 +456,9 @@ app.post('/edit/:tripName', async (req, res) => {
     todoItems
   } = req.body;
 
-  // 🧹 Normalize transport and lodging to arrays (even if only one checkbox was selected)
-  if (!Array.isArray(transport)) {
-    transport = transport ? [transport] : [];
-  }
-  if (!Array.isArray(lodging)) {
-    lodging = lodging ? [lodging] : [];
-  }
+  // Normalize arrays
+  if (!Array.isArray(transport)) transport = transport ? [transport] : [];
+  if (!Array.isArray(lodging)) lodging = lodging ? [lodging] : [];
 
   try {
     await pool.query(
@@ -442,9 +482,9 @@ app.post('/edit/:tripName', async (req, res) => {
         start_date,
         end_date,
         travelers,
-        transport,         // ✅ now always an array
+        transport,
         transport_budget,
-        lodging,           // ✅ now always an array
+        lodging,
         lodging_budget,
         savings_goal,
         destination_type,
@@ -455,16 +495,17 @@ app.post('/edit/:tripName', async (req, res) => {
       ]
     );
 
-    // 🔄 Sync packing list
+    // 🧳 Sync packing list
     if (wantsPacking === 'yes' && packingItems) {
-      await syncPackingItems(tripName, packingItems);
+      const items = Array.isArray(packingItems) ? packingItems : [packingItems];
+      await syncPackingItems(tripName, items);
     }
 
-    // 🔄 Sync to-do list
+    // ✅ Sync To-Do list
     if (todoItems) {
       const todoLines = todoItems
         .split('\n')
-        .map(line => line.trim())
+        .map(line => line.trim().replace(/,+$/, '')) // remove trailing commas
         .filter(Boolean);
       await syncTodoItems(tripName, todoLines);
     }
@@ -480,12 +521,38 @@ app.post('/delete/:trip_id', async (req, res) => {
   const tripId = req.params.trip_id;
 
   try {
+    // 1. Delete from Postgres
     await pool.query('DELETE FROM trips WHERE trip_name = $1', [tripId]);
+
+    // 2. Delete from todo microservice (if it exists)
+    try {
+      await axios.delete(`http://localhost:3888/todo/${encodeURIComponent(tripId)}`);
+      console.log(`Deleted todos for trip '${tripId}'`);
+    } catch (err) {
+      if (err.response?.status === 404) {
+        console.warn(`No todos found for trip '${tripId}' — skipping`);
+      } else {
+        console.error('Failed to delete todos:', err.message);
+      }
+    }
+
+    // 3. Redirect back to saved trips
     res.redirect('/saved');
   } catch (err) {
     console.error('Failed to delete trip:', err);
     res.status(500).send('Failed to delete trip.');
   }
+});
+
+// DELETE /todo/:trip_id
+app.delete('/todo/:trip_id', (req, res) => {
+  const tripId = decodeURIComponent(req.params.trip_id);
+  const data = loadData(); // your saved_todos.json handler
+
+  delete data[tripId]; // 💥 Remove that trip's todo list
+  saveData(data);
+
+  res.status(204).send(); // no content
 });
 
 // Define data functions early so they’re available below

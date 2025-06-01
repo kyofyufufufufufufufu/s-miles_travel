@@ -22,8 +22,9 @@
     "saved": 200
   },
   "new trip": {
-    "goal": 500.0,
-    "saved": 0
+    "goal": 1500.0,
+    "saved": 1900.0,
+    "celebrated": true
   },
   "testtrip": {
     "goal": 0.0,

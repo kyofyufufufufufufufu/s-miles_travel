@@ -67,6 +67,124 @@
     {
       "item": "testing item",
       "checked": false
+    },
+    {
+      "item": "Hand sanitizer \ud83e\uddf4",
+      "checked": true
+    },
+    {
+      "item": "Hand sanitizer \ud83e\uddf4",
+      "checked": true
+    },
+    {
+      "item": "ID (Driver's License, REAL ID, etc.) \ud83e\udeaa",
+      "checked": false
+    },
+    {
+      "item": "Band-aids \ud83e\ude79",
+      "checked": false
+    },
+    {
+      "item": "Charging cable (extra) \ud83e\udeab",
+      "checked": false
+    },
+    {
+      "item": "Credit/Debit cards \ud83d\udcb3",
+      "checked": false
+    },
+    {
+      "item": "Deodorant \ud83e\uddf4",
+      "checked": false
+    },
+    {
+      "item": "Earbuds/Headphones \ud83c\udfa7",
+      "checked": true
+    },
+    {
+      "item": "Body wash or soap \ud83e\uddfd",
+      "checked": false
+    },
+    {
+      "item": "Cash (local currency + USD) \ud83d\udcb5",
+      "checked": false
+    },
+    {
+      "item": "Face masks \ud83d\ude37",
+      "checked": false
+    },
+    {
+      "item": "Floss \ud83e\uddf5",
+      "checked": false
+    },
+    {
+      "item": "ID (Driver's License",
+      "checked": false
+    },
+    {
+      "item": "REAL ID",
+      "checked": false
+    },
+    {
+      "item": "etc.) \ud83e\udeaa",
+      "checked": false
+    },
+    {
+      "item": "Medications (daily + extras) \ud83d\udc8a",
+      "checked": false
+    },
+    {
+      "item": "Menstrual Products \ud83e\ude78",
+      "checked": false
+    },
+    {
+      "item": "Pain relievers (Ibuprofen",
+      "checked": false
+    },
+    {
+      "item": "Tylenol) \ud83d\udc8a",
+      "checked": false
+    },
+    {
+      "item": "Pants/Shorts \ud83d\udc56",
+      "checked": false
+    }
+  ],
+  "new trip": [
+    {
+      "item": "Band-aids \ud83e\ude79",
+      "checked": false
+    },
+    {
+      "item": "Charging cable (extra) \ud83e\udeab",
+      "checked": false
+    },
+    {
+      "item": "Credit/Debit cards \ud83d\udcb3",
+      "checked": false
+    },
+    {
+      "item": "Hair ties or clips \ud83e\udea2",
+      "checked": true
+    },
+    {
+      "item": "ID (Driver's License",
+      "checked": false
+    },
+    {
+      "item": "REAL ID",
+      "checked": false
+    },
+    {
+      "item": "etc.) \ud83e\udeaa",
+      "checked": false
+    },
+    {
+      "item": "Deodorant \ud83e\uddf4",
+      "checked": false
+    },
+    {
+      "item": "Socks \ud83e\udde6",
+      "checked": false
     }
   ]
 }
