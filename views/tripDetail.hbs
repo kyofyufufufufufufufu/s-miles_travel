@@ -91,7 +91,7 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // 🎉 Confetti if applicable
+    // Confetti celebration after completing savings goal
     const canvas = document.getElementById('confetti-canvas');
     if (canvas) {
       const confetti = window.confetti.create(canvas, {
@@ -107,7 +107,7 @@
 
     const tripId = "{{trip.trip_name}}"; // Injected trip name
 
-    // ✅ Packing list checkbox toggle logic (unchanged)
+    // packing list checkbox toggle
     document.querySelectorAll('.packing-checklist input[type="checkbox"]').forEach((checkbox) => {
       checkbox.addEventListener('change', async (e) => {
         const index = e.target.dataset.index;
@@ -128,7 +128,7 @@
       });
     });
 
-    // ✅ To-do list checkbox toggle logic (now identical to packing list)
+    // To-do list checkbox toggle
     document.querySelectorAll('.todo-checklist input[type="checkbox"]').forEach((checkbox) => {
       checkbox.addEventListener('change', async (e) => {
         const index = e.target.dataset.index;

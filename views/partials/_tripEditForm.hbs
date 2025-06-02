@@ -1,6 +1,5 @@
 <form action="{{formAction}}{{trip.trip_name}}" method="POST" class="custom-form" data-trip-type="{{tripTypeFlag}}">
 
-  <!-- Basic Info -->
   <label>Trip Name:</label>
   <input type="text" name="tripName" required value="{{trip.trip_name}}" readonly />
 
@@ -16,7 +15,6 @@
   <label>Number of Travelers:</label>
   <input type="number" name="travelers" min="1" required value="{{trip.travelers}}" />
 
-  <!-- Transportation -->
   <fieldset>
     <legend>Traveling By:</legend>
     <label><input type="checkbox" name="transport" value="plane" {{#if (eq trip.transport 'plane')}}checked{{/if}}> Plane</label>
@@ -38,7 +36,6 @@
     <input type="number" name="flightBudget" />
   {{/if}}
 
-  <!-- Lodging -->
   <fieldset>
     <legend>Lodging:</legend>
     <label><input type="checkbox" name="lodging" value="hotel" {{#if (eq trip.lodging 'hotel')}}checked{{/if}}> Hotel</label>
@@ -56,7 +53,6 @@
     <input type="number" name="natureBudget" />
   {{/if}}
 
-  <!-- Destination and Budget -->
   <label>Destination Type:</label>
   <select name="destination_type">
     <option value="domestic" {{#if (eq trip.destination_type 'domestic')}}selected{{/if}}>Domestic</option>
@@ -72,7 +68,6 @@
   <label>Budget Goal ($):</label>
   <input type="number" name="savings_goal" value="{{trip.savings_goal}}" />
 
-  <!-- Pack toggle -->
   <label>Do you need to pack?</label>
   <select id="show-packing" name="wantsPacking">
     <option value="yes" {{#if (eq trip.wants_packing 'yes')}}selected{{/if}}>Yes</option>

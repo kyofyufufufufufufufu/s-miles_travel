@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const todoToggle = document.getElementById("show-todo");
     const savingToggle = document.getElementById("saving");
   
+    // condtional for form
     const showSectionIfYes = (selectEl, sectionId) => {
       const section = document.getElementById(sectionId);
       if (selectEl && section) {

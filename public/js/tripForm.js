@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const packingSection = document.getElementById('packing-section');
   const packingListUI = document.getElementById('packing-items-list');
 
-  // Show/hide and load packing list on toggle
+  // Show/hide and load packing list
   packingToggle?.addEventListener('change', () => {
     if (packingToggle.value === 'yes') {
       packingSection.style.display = 'block';
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Load on page load if "yes" already selected
+  // Load on page
   if (packingToggle?.value === 'yes') {
     packingSection.style.display = 'block';
     loadPackingOptions(tripType);
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  // Inject hidden packing inputs before submit
+  // Inject hidden packing inputs
   form?.addEventListener('submit', () => {
     const packingItems = [...document.querySelectorAll('input[name="packingItem"]:checked')]
       .map(cb => cb.value.trim());

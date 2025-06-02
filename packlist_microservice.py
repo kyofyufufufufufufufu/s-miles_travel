@@ -6,10 +6,8 @@ from packlist_options import PACKLIST_BY_TYPE
 
 app = Flask(__name__)
 DATA_FILE = 'packing_store.json'
-CORS(app)  # 👈 This enables cross-origin requests
+CORS(app)
 
-
-# Ensure the JSON file exists
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as f:
         json.dump({}, f)
@@ -50,9 +48,9 @@ def toggle_item(trip_id, item_index):
 
     try:
         item = data[trip_id][item_index]
-        item['checked'] = not item.get('checked', False)  # safely toggle
+        item['checked'] = not item.get('checked', False)
         print(f"Toggled item {item_index} in trip '{trip_id}' to {item['checked']}")
-        save_data(data)  # ✅ save the modified data
+        save_data(data)
         return jsonify({'message': 'Item status toggled'}), 200
     except IndexError:
         return jsonify({'error': 'Item index out of range'}), 404
@@ -67,7 +65,6 @@ def delete_item(trip_id, item_index):
     except (KeyError, IndexError):
         return jsonify({'error': 'Item not found'}), 404
 
-# get items from packlist_options.py file
 @app.route('/packing/options/<trip_type>', methods=['GET'])
 def get_packing_options_by_type(trip_type):
     base = set(PACKLIST_BY_TYPE.get("general", []))

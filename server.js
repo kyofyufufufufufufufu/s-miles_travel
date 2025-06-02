@@ -1,7 +1,7 @@
 require('dotenv').config();
 console.log('Database URL:', process.env.DATABASE_URL);
 
-const zmq = require('zeromq');      // ✅ Make sure this is also required
+const zmq = require('zeromq');
 const API_KEY = process.env.API_KEY;
 console.log("Loaded API KEY:", API_KEY);
 
@@ -40,17 +40,15 @@ const PORT = process.env.PORT || 3157;
 
 const fs = require('fs');
 
-// Path to your JSON file that stores trip data
+// Path to JSON file that stores trip data
 const TRIP_DATA_FILE = path.join(__dirname, 'savings_data.json');
 
-// Step 1: Create hbs instance (before registering helpers)
 const hbs = exphbs.create({ extname: '.hbs' });
 
-// Step 2: Register handlebars-helpers first
 const helpers = require('handlebars-helpers')();
 hbs.handlebars.registerHelper(helpers);
 
-// Step 3: Register your custom helpers
+// Custom helpers
 hbs.handlebars.registerHelper('gte', (a, b) => parseFloat(a) >= parseFloat(b));
 hbs.handlebars.registerHelper('eq', (a, b) => a === b);
 hbs.handlebars.registerHelper('min', (a, b) => Math.min(parseFloat(a), parseFloat(b)));
@@ -77,12 +75,10 @@ hbs.handlebars.registerHelper('json', (context) => {
   return JSON.stringify(context).replace(/</g, '\\u003c');
 });
 
-// Step 4: Apply hbs engine to express
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Serve static files (like CSS) from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
 const bodyParser = require('body-parser');
@@ -90,21 +86,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(session({
-  secret: 'smiles-secret-key', // use dotenv later
+  secret: 'smiles-secret-key',
   resave: false,
   saveUninitialized: false
 }));
 
-const savedTrips = []; // Storing saved trip information
-
 // Home
 app.get('/', (req, res) => {
   res.render('home', { title: 'Welcome to s+miles' });
-});
-
-// Account
-app.get('/account', (req, res) => {
-  res.render('account', { title: 'My Account' });
 });
 
 // Saved Trips
@@ -234,7 +223,7 @@ app.get('/edit/:tripName', async (req, res) => {
     const trip = result.rows[0];
     if (!trip) return res.status(404).send('Trip not found');
 
-    // 🧠 Get packing list
+    // Get packing list
     try {
       const packRes = await axios.get(`http://localhost:3777/packing/${encodeURIComponent(tripName)}`);
       trip.packingList = packRes.data;
@@ -243,7 +232,7 @@ app.get('/edit/:tripName', async (req, res) => {
       trip.packingList = [];
     }
 
-    // 🧠 Get to-do list + raw format
+    // Get to-do list
     try {
       const todoRes = await axios.get(`http://localhost:3888/todo/${encodeURIComponent(tripName)}`);
       trip.todoList = todoRes.data;
@@ -401,7 +390,7 @@ app.post('/custom', async (req, res) => {
   }
 });
 
-// Savings POST (Trip Details)
+// Savings POST (Trip Details page)
 app.post('/savings/add', async (req, res) => {
   const { trip_id, amount } = req.body;
 
@@ -495,17 +484,17 @@ app.post('/edit/:tripName', async (req, res) => {
       ]
     );
 
-    // 🧳 Sync packing list
+    // Sync packing list
     if (wantsPacking === 'yes' && packingItems) {
       const items = Array.isArray(packingItems) ? packingItems : [packingItems];
       await syncPackingItems(tripName, items);
     }
 
-    // ✅ Sync To-Do list
+    // Sync To-Do list
     if (todoItems) {
       const todoLines = todoItems
         .split('\n')
-        .map(line => line.trim().replace(/,+$/, '')) // remove trailing commas
+        .map(line => line.trim().replace(/,+$/, '')) // Removes trailing commas
         .filter(Boolean);
       await syncTodoItems(tripName, todoLines);
     }
@@ -521,10 +510,8 @@ app.post('/delete/:trip_id', async (req, res) => {
   const tripId = req.params.trip_id;
 
   try {
-    // 1. Delete from Postgres
     await pool.query('DELETE FROM trips WHERE trip_name = $1', [tripId]);
 
-    // 2. Delete from todo microservice (if it exists)
     try {
       await axios.delete(`http://localhost:3888/todo/${encodeURIComponent(tripId)}`);
       console.log(`Deleted todos for trip '${tripId}'`);
@@ -536,7 +523,6 @@ app.post('/delete/:trip_id', async (req, res) => {
       }
     }
 
-    // 3. Redirect back to saved trips
     res.redirect('/saved');
   } catch (err) {
     console.error('Failed to delete trip:', err);
@@ -544,18 +530,17 @@ app.post('/delete/:trip_id', async (req, res) => {
   }
 });
 
-// DELETE /todo/:trip_id
+// DELETE
 app.delete('/todo/:trip_id', (req, res) => {
   const tripId = decodeURIComponent(req.params.trip_id);
-  const data = loadData(); // your saved_todos.json handler
+  const data = loadData();
 
-  delete data[tripId]; // 💥 Remove that trip's todo list
+  delete data[tripId];
   saveData(data);
 
-  res.status(204).send(); // no content
+  res.status(204).send();
 });
 
-// Define data functions early so they’re available below
 function loadData() {
   if (!fs.existsSync(TRIP_DATA_FILE)) {
     fs.writeFileSync(TRIP_DATA_FILE, '{}', 'utf8');

@@ -5,24 +5,20 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 DATA_FILE = 'savings_data.json'
-CORS(app)  # Add this line after creating the app
+CORS(app)
 
-
-# Utility: Load or initialize savings data
 def load_data():
     if not os.path.exists(DATA_FILE):
         return {}
     with open(DATA_FILE, 'r') as f:
         return json.load(f)
 
-
-# Utility: Save data to file
 def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
 
 
-# Route: Get savings data for a trip
+# Get savings data for a trip
 @app.route('/savings/<trip_id>', methods=['GET'])
 def get_savings(trip_id):
     data = load_data()
@@ -41,7 +37,7 @@ def get_savings(trip_id):
         "celebrated": trip.get("celebrated", False)
     })
 
-# Route: Create a new savings goal
+# Create a new savings goal
 @app.route('/savings', methods=['POST'])
 def create_savings():
     data = load_data()
@@ -61,9 +57,7 @@ def create_savings():
 
     return jsonify({"message": "Savings goal created"}), 201
 
-
-# Route: Update saved amount (contribution)
-# Route: Update saved amount (contribution)
+# Update saved amount
 @app.route('/savings/<trip_id>', methods=['PATCH'])
 def update_savings(trip_id):
     data = load_data()
@@ -82,11 +76,10 @@ def update_savings(trip_id):
 
         trip['saved'] += amount
 
-    # Update goal if present
+    # Update goal
     if 'goal' in body:
         trip['goal'] = float(body['goal'])
 
-    # Mark celebration only once
     goal = trip['goal']
     saved = trip['saved']
     if saved >= goal and not trip.get('celebrated'):
@@ -95,7 +88,7 @@ def update_savings(trip_id):
     save_data(data)
     return jsonify({"message": "Savings updated"}), 200
 
-# Route: Delete savings goal
+# Delete goal
 @app.route('/savings/<trip_id>', methods=['DELETE'])
 def delete_savings(trip_id):
     data = load_data()

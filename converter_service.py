@@ -1,4 +1,3 @@
-# sends message
 import json
 import time
 

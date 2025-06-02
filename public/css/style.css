@@ -11,11 +11,11 @@ body {
     border-radius: 24px;
     max-width: 1000px;
     margin: 2rem auto;
-    overflow: hidden; /* ensures nav corners match */
+    overflow: hidden;
   }
   
   .window-nav {
-    background-color: #f9e19d; /* pastel yellow */
+    background-color: #f9e19d;
     padding: 1rem 2rem;
     display: flex;
     align-items: center;
@@ -39,7 +39,7 @@ body {
   }
   
   .logo {
-    height: 50px; /* Tweak if needed */
+    height: 50px;
     width: auto;
     object-fit: contain;
   }
@@ -99,8 +99,8 @@ body {
   .tagline-split {
     display: inline-flex;
     align-items: center;
-    justify-content: center; /* center the whole duo */
-    gap: 0.1rem; /* Optional: restore a *small* friendly gap */
+    justify-content: center;
+    gap: 0.1rem;
     margin-bottom: 2rem;
     flex-wrap: wrap;
   }
@@ -318,7 +318,7 @@ body {
 
 .progress-fill {
   height: 100%;
-  background-color: #4caf50; /* green */
+  background-color: #4caf50;
   width: 0;
   transition: width 0.4s ease-in-out;
   border-radius: 10px 0 0 10px;
@@ -410,7 +410,6 @@ body {
   color: #999;
 }
 
-/* === Currency Converter Styles === */
 .converter-page {
   padding: 2rem;
   max-width: 600px;

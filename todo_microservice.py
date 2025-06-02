@@ -7,7 +7,7 @@ app = Flask(__name__)
 DATA_FILE = 'saved_todos.json'
 CORS(app)
 
-# Ensure the file exists
+# File validation
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as f:
         json.dump({}, f)
@@ -81,7 +81,7 @@ def delete_todo_for_trip(trip_name):
         return '', 204
     return jsonify({'error': 'Trip not found'}), 404
 
-# ✅ New helper: initialize an empty list for a trip
+# Initialize an empty list for a trip
 @app.route('/todo/init/<trip_name>', methods=['POST'])
 def init_todo_list(trip_name):
     trip_name = unquote(trip_name)
